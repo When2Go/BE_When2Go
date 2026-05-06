@@ -1,0 +1,128 @@
+package org.example.when2go.domain.trip.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.example.when2go.domain.reservation.entity.Reservation;
+import org.example.when2go.domain.route.enums.RouteOption;
+import org.example.when2go.domain.trip.enums.TripStatus;
+import org.example.when2go.domain.user.entity.AppUser;
+import org.example.when2go.global.common.entity.BaseEntity;
+
+@Getter
+@Entity
+@Table(name = "trips")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Trip extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reservation_id")
+    private Reservation reservation;
+
+    @Column(name = "origin_name", nullable = false)
+    private String originName;
+
+    @Column(name = "dest_name", nullable = false)
+    private String destName;
+
+    @Column(name = "origin_lat", nullable = false)
+    private Double originLat;
+
+    @Column(name = "origin_lng", nullable = false)
+    private Double originLng;
+
+    @Column(name = "dest_lat", nullable = false)
+    private Double destLat;
+
+    @Column(name = "dest_lng", nullable = false)
+    private Double destLng;
+
+    @Column(name = "arrival_time", nullable = false)
+    private LocalDateTime arrivalTime;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "route_option", nullable = false, length = 30)
+    private RouteOption routeOption;
+
+    @Column(name = "buffer_minutes", nullable = false)
+    private Integer bufferMinutes;
+
+    @Column(name = "final_departure_time")
+    private LocalDateTime finalDepartureTime;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private TripStatus status = TripStatus.PENDING;
+
+    @Column(name = "actual_departed_at")
+    private LocalDateTime actualDepartedAt;
+
+    @Column(name = "actual_arrived_at")
+    private LocalDateTime actualArrivedAt;
+
+    @Column(name = "actual_minutes")
+    private Integer actualMinutes;
+
+    @Column(name = "error_minutes")
+    private Integer errorMinutes;
+
+    @Builder
+    private Trip(
+            AppUser user,
+            Reservation reservation,
+            String originName,
+            String destName,
+            Double originLat,
+            Double originLng,
+            Double destLat,
+            Double destLng,
+            LocalDateTime arrivalTime,
+            RouteOption routeOption,
+            Integer bufferMinutes,
+            LocalDateTime finalDepartureTime,
+            TripStatus status,
+            LocalDateTime actualDepartedAt,
+            LocalDateTime actualArrivedAt,
+            Integer actualMinutes,
+            Integer errorMinutes
+    ) {
+        this.user = user;
+        this.reservation = reservation;
+        this.originName = originName;
+        this.destName = destName;
+        this.originLat = originLat;
+        this.originLng = originLng;
+        this.destLat = destLat;
+        this.destLng = destLng;
+        this.arrivalTime = arrivalTime;
+        this.routeOption = routeOption;
+        this.bufferMinutes = bufferMinutes;
+        this.finalDepartureTime = finalDepartureTime;
+        this.status = status == null ? TripStatus.PENDING : status;
+        this.actualDepartedAt = actualDepartedAt;
+        this.actualArrivedAt = actualArrivedAt;
+        this.actualMinutes = actualMinutes;
+        this.errorMinutes = errorMinutes;
+    }
+}
