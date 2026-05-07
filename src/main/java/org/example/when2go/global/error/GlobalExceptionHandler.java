@@ -62,6 +62,24 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(GlobalErrorCode.INVALID_JSON));
     }
 
+    // 필수 값 누락 예외 처리
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNullPointerException(NullPointerException e) {
+        log.warn("Required value missing: {}", e.getMessage());
+        return ResponseEntity
+                .status(GlobalErrorCode.REQUIRED_VALUE_MISSING.getHttpStatus())
+                .body(ApiResponse.error(GlobalErrorCode.REQUIRED_VALUE_MISSING));
+    }
+
+    // 잘못된 인자 예외 처리
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("Invalid argument: {}", e.getMessage());
+        return ResponseEntity
+                .status(GlobalErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
+                .body(ApiResponse.error(GlobalErrorCode.INVALID_INPUT_VALUE));
+    }
+
     // 지원하지 않는 HTTP 메서드 예외 처리
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponse<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException e) {

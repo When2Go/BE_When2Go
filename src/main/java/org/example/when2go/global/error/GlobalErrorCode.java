@@ -17,6 +17,7 @@ public enum GlobalErrorCode implements ErrorCode {
     INVALID_TYPE_VALUE(HttpStatus.BAD_REQUEST, "GLOBAL_002", "잘못된 타입입니다."),
     MISSING_REQUEST_PARAMETER(HttpStatus.BAD_REQUEST, "GLOBAL_003", "필수 파라미터가 누락되었습니다."),
     INVALID_JSON(HttpStatus.BAD_REQUEST, "GLOBAL_004", "잘못된 JSON 형식입니다."),
+    REQUIRED_VALUE_MISSING(HttpStatus.BAD_REQUEST, "GLOBAL_005", "NPE 문제가 발생했습니다."),
 
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "GLOBAL_010", "인증이 필요합니다."),
