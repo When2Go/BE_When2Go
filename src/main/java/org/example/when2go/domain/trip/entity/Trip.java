@@ -12,6 +12,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -65,6 +66,7 @@ public class Trip extends BaseEntity {
     @Column(name = "route_option", nullable = false, length = 30)
     private RouteOption routeOption;
 
+    // TODO 사용자의 버퍼를 기본으로 넣기
     @Column(name = "buffer_minutes", nullable = false)
     private Integer bufferMinutes;
 
@@ -107,17 +109,17 @@ public class Trip extends BaseEntity {
             Integer actualMinutes,
             Integer errorMinutes
     ) {
-        this.user = user;
+        this.user = Objects.requireNonNull(user, "user must not be null");
         this.reservation = reservation;
-        this.originName = originName;
-        this.destName = destName;
-        this.originLat = originLat;
-        this.originLng = originLng;
-        this.destLat = destLat;
-        this.destLng = destLng;
-        this.arrivalTime = arrivalTime;
-        this.routeOption = routeOption;
-        this.bufferMinutes = bufferMinutes;
+        this.originName = Objects.requireNonNull(originName, "originName must not be null");
+        this.destName = Objects.requireNonNull(destName, "destName must not be null");
+        this.originLat = Objects.requireNonNull(originLat, "originLat must not be null");
+        this.originLng = Objects.requireNonNull(originLng, "originLng must not be null");
+        this.destLat = Objects.requireNonNull(destLat, "destLat must not be null");
+        this.destLng = Objects.requireNonNull(destLng, "destLng must not be null");
+        this.arrivalTime = Objects.requireNonNull(arrivalTime, "arrivalTime must not be null");
+        this.routeOption = Objects.requireNonNull(routeOption, "routeOption must not be null");
+        this.bufferMinutes = Objects.requireNonNull(bufferMinutes, "bufferMinutes must not be null");
         this.finalDepartureTime = finalDepartureTime;
         this.status = status == null ? TripStatus.PENDING : status;
         this.actualDepartedAt = actualDepartedAt;
