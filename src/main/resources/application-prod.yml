@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: when2go
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PWD}
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+    hibernate:
+      ddl-auto: update
+      use_sql_comments: true
+      jdbc:
+        batch_size: 500
+
+  data:
+    redis:
+      host: when2go-redis
+      port: 6379
