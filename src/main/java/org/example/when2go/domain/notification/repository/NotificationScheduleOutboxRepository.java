@@ -12,7 +12,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface NotificationScheduleOutboxRepository extends JpaRepository<NotificationScheduleOutbox, Long> {
 
-    boolean existsByDedupKey(String dedupKey);
+    @Query("""
+            SELECT o.dedupKey
+            FROM NotificationScheduleOutbox o
+            WHERE o.dedupKey IN :dedupKeys
+            """)
+    List<String> findDedupKeysIn(@Param("dedupKeys") Collection<String> dedupKeys);
 
     @Query(
             value = """

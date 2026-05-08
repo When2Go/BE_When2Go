@@ -32,8 +32,12 @@ public interface NotificationScheduleRepository extends JpaRepository<Notificati
             JOIN FETCH s.user
             JOIN FETCH s.trip
             WHERE s.id IN :ids
+              AND s.status = :status
             """)
-    List<NotificationSchedule> findAllByIdInWithUserAndTrip(@Param("ids") Collection<Long> ids);
+    List<NotificationSchedule> findAllByIdInAndStatusWithUserAndTrip(
+            @Param("ids") Collection<Long> ids,
+            @Param("status") NotificationScheduleStatus status
+    );
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
