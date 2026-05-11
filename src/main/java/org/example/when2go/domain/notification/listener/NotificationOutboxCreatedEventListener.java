@@ -27,6 +27,7 @@ public class NotificationOutboxCreatedEventListener {
         }
 
         try {
+            // SQS로 메시지 발행
             notificationScheduleOutboxPublisher.publishPendingOutboxes();
         } catch (RuntimeException e) {
             log.warn("event=notification.outbox_created_listener_failed createdCount={}", event.createdCount(), e);

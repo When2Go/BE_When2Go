@@ -67,6 +67,14 @@ public interface NotificationScheduleRepository extends JpaRepository<Notificati
     );
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("DELETE FROM NotificationSchedule s WHERE s.trip.id = :tripId")
-    int deleteByTripId(@Param("tripId") Long tripId);
+    @Query("""
+            DELETE FROM NotificationSchedule s
+            WHERE s.trip.id = :tripId
+              AND NOT EXISTS (
+                  SELECT 1
+                  FROM NotificationScheduleOutbox o
+                  WHERE o.schedule = s
+              )
+            """)
+    int deleteByTripIdWithoutOutboxes(@Param("tripId") Long tripId);
 }

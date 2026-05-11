@@ -14,6 +14,8 @@ public class NotificationOutboxStatusService {
 
     private final NotificationScheduleOutboxRepository notificationScheduleOutboxRepository;
 
+    // SQS enqueue 성공 시점에 호출. PUBLISHED는 "SQS까지 전달됨"을 의미하며,
+    // 이후 FCM 실제 발송 결과는 Lambda/CloudWatch에서 관측한다.
     @Transactional
     public void markPublished(Collection<Long> outboxIds) {
         if (outboxIds.isEmpty()) {

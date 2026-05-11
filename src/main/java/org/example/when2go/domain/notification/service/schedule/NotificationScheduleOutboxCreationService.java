@@ -54,6 +54,7 @@ public class NotificationScheduleOutboxCreationService {
         int skippedDuplicateCount = 0;
 
         for (NotificationSchedule schedule : schedules) {
+            // FCM 토큰이 없는 경우
             if (!StringUtils.hasText(schedule.getUser().getFcmToken())) {
                 skippedMissingTokenCount++;
                 log.warn(
@@ -67,6 +68,7 @@ public class NotificationScheduleOutboxCreationService {
                 continue;
             }
 
+            // dedup key 중복 (이미 Outbox 존재)
             String dedupKey = dedupKey(schedule);
             if (existingDedupKeys.contains(dedupKey)) {
                 skippedDuplicateCount++;
@@ -112,6 +114,7 @@ public class NotificationScheduleOutboxCreationService {
         return new HashSet<>(notificationScheduleOutboxRepository.findDedupKeysIn(dedupKeys));
     }
 
+    // 누락된 ID 로깅 -> 다른 워커가 이미 가져갔거나 상태가 바뀐 경우 추적용
     private void logSkippedNonProcessingSchedules(
             Collection<Long> requestedIds,
             List<NotificationSchedule> processingSchedules
