@@ -18,6 +18,7 @@ public class NotificationScheduler {
     private final NotificationProcessingRecoveryService notificationProcessingRecoveryService;
     private final NotificationProperties notificationProperties;
 
+    // 아웃박스 row 생성
     @Scheduled(fixedDelayString = "${notification.schedule.fixed-delay-millis:60000}")
     public void processDueSchedules() {
         eventPublisher.publishEvent(new NotificationScheduleScanRequestedEvent(

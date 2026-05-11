@@ -16,6 +16,7 @@ public class NotificationScheduleService {
 
     private final NotificationScheduleRepository notificationScheduleRepository;
 
+    // Trip을 기반으로 NotificationSchedule 생성
     @Transactional
     public List<NotificationSchedule> createDepartureSchedules(Trip trip) {
         Objects.requireNonNull(trip, "trip must not be null");

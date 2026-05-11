@@ -22,6 +22,7 @@ public class NotificationScheduleOutboxPublisher {
     private final NotificationSqsClient notificationSqsClient;
     private final NotificationProperties notificationProperties;
 
+    // claim, markPublished, markFailed 각각이 개별 짧은 트랜잭션으로 동작, SQS 호출을 트랜잭션 안에 넣지 않음
     public int publishPendingOutboxes() {
         List<NotificationScheduleOutbox> outboxes = notificationOutboxClaimService.claimPendingOutboxes(
                 notificationProperties.getOutbox().getClaimSize()
@@ -68,6 +69,7 @@ public class NotificationScheduleOutboxPublisher {
                 .toList();
     }
 
+    // 실패한 부분에 대해 재시도/최종 실패 처리
     private void handleFailures(List<NotificationScheduleOutbox> batch, List<Long> failedIds) {
         if (failedIds.isEmpty()) {
             return;
@@ -89,7 +91,10 @@ public class NotificationScheduleOutboxPublisher {
             }
         }
 
+        // 재시도 처리
         notificationOutboxStatusService.markRetryableFailure(retryableIds);
+
+        // 최종 실패 처리
         notificationOutboxStatusService.markFailed(finalFailedIds);
     }
 }

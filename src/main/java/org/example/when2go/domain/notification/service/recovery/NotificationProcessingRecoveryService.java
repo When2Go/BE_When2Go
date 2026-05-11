@@ -18,6 +18,7 @@ public class NotificationProcessingRecoveryService {
     private final NotificationScheduleOutboxRepository notificationScheduleOutboxRepository;
     private final NotificationProperties notificationProperties;
 
+    // 오래된 PROCESSING row를 다시 PENDING으로 돌린다
     @Transactional
     public int recoverStuckProcessingRows() {
         LocalDateTime threshold = LocalDateTime.now()
