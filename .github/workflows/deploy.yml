@@ -76,6 +76,8 @@ jobs:
 
             cat > .env <<'EOF'
             APP_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_KEY }}
             AWS_REGION=${{ secrets.AWS_REGION }}
             DB_URL=${{ secrets.DB_URL }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
@@ -117,6 +119,8 @@ jobs:
 
             cat > .env <<'EOF'
             APP_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY }}
+            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_KEY }}
             AWS_REGION=${{ secrets.AWS_REGION }}
             DB_URL=${{ secrets.DB_URL }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
