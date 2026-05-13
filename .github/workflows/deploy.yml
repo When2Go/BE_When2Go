@@ -4,14 +4,20 @@ on:
   push:
     branches:
       - main
+      - 743hw4n/chore/9/deploy
+    paths-ignore:
+      - README.md
+      - docs/**
+
+  workflow_dispatch:
+
+env:
+  IMAGE_TAG: latest
 
 jobs:
-  build-and-push:
-    name: Build & Push to ECR
+  build-and-deploy:
+    name: Build, Push, and Deploy
     runs-on: ubuntu-latest
-
-    outputs:
-      image: ${{ steps.image-uri.outputs.image }}
 
     steps:
       - name: Checkout
@@ -29,27 +35,22 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and push Docker image
-        id: image-uri
         env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+          SHA_TAG: ${{ github.sha }}
         run: |
-          IMAGE_URI=$REGISTRY/$REPOSITORY:$IMAGE_TAG
-          docker build -t $IMAGE_URI .
-          docker push $IMAGE_URI
-          echo "image=$IMAGE_URI" >> $GITHUB_OUTPUT
+          set -e
 
-  deploy-api:
-    name: Deploy to API EC2
-    runs-on: ubuntu-latest
-    needs: build-and-push
+          docker build \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:$SHA_TAG" \
+            .
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$SHA_TAG"
 
-      - name: Copy docker-compose.yml to EC2
+      - name: Copy docker-compose.yml to API EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.EC2_API_HOST }}
@@ -58,43 +59,36 @@ jobs:
           source: docker-compose.yml
           target: /home/${{ secrets.EC2_API_USER }}/when2go
 
-      - name: Deploy on API EC2
+      - name: Deploy to API EC2
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          APP_IMAGE: ${{ needs.build-and-push.outputs.image }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          DEPLOY_USER: ${{ secrets.EC2_API_USER }}
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PWD: ${{ secrets.DB_PWD }}
         with:
           host: ${{ secrets.EC2_API_HOST }}
           username: ${{ secrets.EC2_API_USER }}
           key: ${{ secrets.EC2_API_SSH_KEY }}
-          envs: APP_IMAGE,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,DEPLOY_USER,DB_URL,DB_USERNAME,DB_PWD
           script: |
-            ECR_REGISTRY=$(echo "$APP_IMAGE" | cut -d'/' -f1)
+            set -e
 
-            aws ecr get-login-password --region "$AWS_REGION" \
-              | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+            cd /home/${{ secrets.EC2_API_USER }}/when2go
 
-            cd /home/"$DEPLOY_USER"/when2go
+            export AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY }}'
+            export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_KEY }}'
+            export AWS_DEFAULT_REGION='${{ secrets.AWS_REGION }}'
+
+            cat > .env <<'EOF'
+            APP_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PWD=${{ secrets.DB_PWD }}
+            EOF
+            chmod 600 .env
+
+            aws ecr get-login-password --region "${{ secrets.AWS_REGION }}" \
+              | docker login --username AWS --password-stdin "${{ steps.login-ecr.outputs.registry }}"
 
             docker compose pull app
             docker compose up -d --remove-orphans
-
             docker image prune -f
-
-  deploy-scheduler:
-    name: Deploy to Scheduler EC2
-    runs-on: ubuntu-latest
-    needs: build-and-push
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
       - name: Copy docker-compose.yml to Scheduler EC2
         uses: appleboy/scp-action@v0.1.7
@@ -105,31 +99,33 @@ jobs:
           source: docker-compose.yml
           target: /home/${{ secrets.EC2_SCHEDULER_USER }}/when2go
 
-      - name: Deploy on Scheduler EC2
+      - name: Deploy to Scheduler EC2
         uses: appleboy/ssh-action@v1.0.3
-        env:
-          APP_IMAGE: ${{ needs.build-and-push.outputs.image }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          DEPLOY_USER: ${{ secrets.EC2_SCHEDULER_USER }}
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PWD: ${{ secrets.DB_PWD }}
         with:
           host: ${{ secrets.EC2_SCHEDULER_HOST }}
           username: ${{ secrets.EC2_SCHEDULER_USER }}
           key: ${{ secrets.EC2_SCHEDULER_SSH_KEY }}
-          envs: APP_IMAGE,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY,AWS_REGION,DEPLOY_USER,DB_URL,DB_USERNAME,DB_PWD
           script: |
-            ECR_REGISTRY=$(echo "$APP_IMAGE" | cut -d'/' -f1)
+            set -e
 
-            aws ecr get-login-password --region "$AWS_REGION" \
-              | docker login --username AWS --password-stdin "$ECR_REGISTRY"
+            cd /home/${{ secrets.EC2_SCHEDULER_USER }}/when2go
 
-            cd /home/"$DEPLOY_USER"/when2go
+            export AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY }}'
+            export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_KEY }}'
+            export AWS_DEFAULT_REGION='${{ secrets.AWS_REGION }}'
+
+            cat > .env <<'EOF'
+            APP_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+            AWS_REGION=${{ secrets.AWS_REGION }}
+            DB_URL=${{ secrets.DB_URL }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PWD=${{ secrets.DB_PWD }}
+            EOF
+            chmod 600 .env
+
+            aws ecr get-login-password --region "${{ secrets.AWS_REGION }}" \
+              | docker login --username AWS --password-stdin "${{ steps.login-ecr.outputs.registry }}"
 
             docker compose pull app
             docker compose up -d --remove-orphans
-
             docker image prune -f
