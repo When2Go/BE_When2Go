@@ -9,6 +9,7 @@ import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.enums.TripRecalcPhase;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
@@ -20,7 +21,7 @@ public class TripRecalcFinalizer {
     private final NotificationScheduleService notificationScheduleService;
     private final Clock clock;
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void finalizeRecalc(Long tripId, RouteSearchResult result) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found: " + tripId));

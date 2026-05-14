@@ -5,7 +5,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
-import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.event.TripRecalcScanRequestedEvent;
 import org.example.when2go.domain.trip.service.recalc.TripRecalcClaimService;
 import org.example.when2go.domain.trip.service.recalc.TripRecalcProcessor;
@@ -25,15 +24,13 @@ class TripRecalcScanListenerTest {
     // scan 이벤트를 받으면 claim된 trip을 각각 재계산 처리하는지 확인한다.
     @Test
     void handleClaimsTripsAndProcessesEachTrip() {
-        Trip firstTrip = org.mockito.Mockito.mock(Trip.class);
-        Trip secondTrip = org.mockito.Mockito.mock(Trip.class);
         when(tripRecalcProcessor.isAvailable()).thenReturn(true);
-        when(tripRecalcClaimService.claim(200)).thenReturn(List.of(firstTrip, secondTrip));
+        when(tripRecalcClaimService.claim(200)).thenReturn(List.of(1L, 2L));
 
         listener.handle(new TripRecalcScanRequestedEvent(200));
 
-        verify(tripRecalcProcessor).process(firstTrip);
-        verify(tripRecalcProcessor).process(secondTrip);
+        verify(tripRecalcProcessor).process(1L);
+        verify(tripRecalcProcessor).process(2L);
     }
 
     // claim 결과가 없으면 재계산 처리를 호출하지 않는지 확인한다.
@@ -44,7 +41,7 @@ class TripRecalcScanListenerTest {
 
         listener.handle(new TripRecalcScanRequestedEvent(200));
 
-        verify(tripRecalcProcessor, never()).process(org.mockito.ArgumentMatchers.any());
+        verify(tripRecalcProcessor, never()).process(org.mockito.ArgumentMatchers.anyLong());
     }
 
     // ODsay client가 아직 구현되지 않은 상태에서는 trip을 claim하지 않는지 확인한다.

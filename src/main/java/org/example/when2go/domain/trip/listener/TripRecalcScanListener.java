@@ -3,7 +3,6 @@ package org.example.when2go.domain.trip.listener;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.event.TripRecalcScanRequestedEvent;
 import org.example.when2go.domain.trip.service.recalc.TripRecalcClaimService;
 import org.example.when2go.domain.trip.service.recalc.TripRecalcProcessor;
@@ -28,9 +27,9 @@ public class TripRecalcScanListener {
                 log.debug("event=trip.recalc_scan_skipped reason=odsay_route_client_missing");
                 return;
             }
-            List<Trip> trips = tripRecalcClaimService.claim(event.limit());
-            for (Trip trip : trips) {
-                tripRecalcProcessor.process(trip);
+            List<Long> tripIds = tripRecalcClaimService.claim(event.limit());
+            for (Long tripId : tripIds) {
+                tripRecalcProcessor.process(tripId);
             }
         } catch (RuntimeException e) {
             log.warn("event=trip.recalc_scan_listener_failed limit={}", event.limit(), e);
