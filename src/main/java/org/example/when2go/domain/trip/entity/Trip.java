@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -19,13 +20,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.when2go.domain.reservation.entity.Reservation;
 import org.example.when2go.domain.route.enums.RouteOption;
+import org.example.when2go.domain.trip.enums.TripRecalcPhase;
 import org.example.when2go.domain.trip.enums.TripStatus;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.global.common.entity.BaseEntity;
 
 @Getter
 @Entity
-@Table(name = "trips")
+@Table(
+        name = "trips",
+        indexes = {
+                @Index(name = "idx_trip_recalc", columnList = "recalc_phase, next_recalc_at")
+        }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Trip extends BaseEntity {
 
@@ -74,6 +81,13 @@ public class Trip extends BaseEntity {
     private LocalDateTime finalDepartureTime;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "recalc_phase", nullable = false, length = 30)
+    private TripRecalcPhase recalcPhase = TripRecalcPhase.INITIAL;
+
+    @Column(name = "next_recalc_at")
+    private LocalDateTime nextRecalcAt;
+
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 30)
     private TripStatus status = TripStatus.PENDING;
 
@@ -103,6 +117,8 @@ public class Trip extends BaseEntity {
             RouteOption routeOption,
             Integer bufferMinutes,
             LocalDateTime finalDepartureTime,
+            TripRecalcPhase recalcPhase,
+            LocalDateTime nextRecalcAt,
             TripStatus status,
             LocalDateTime actualDepartedAt,
             LocalDateTime actualArrivedAt,
@@ -121,10 +137,31 @@ public class Trip extends BaseEntity {
         this.routeOption = Objects.requireNonNull(routeOption, "routeOption must not be null");
         this.bufferMinutes = Objects.requireNonNull(bufferMinutes, "bufferMinutes must not be null");
         this.finalDepartureTime = finalDepartureTime;
+        this.recalcPhase = recalcPhase == null ? TripRecalcPhase.INITIAL : recalcPhase;
+        this.nextRecalcAt = nextRecalcAt;
         this.status = status == null ? TripStatus.PENDING : status;
         this.actualDepartedAt = actualDepartedAt;
         this.actualArrivedAt = actualArrivedAt;
         this.actualMinutes = actualMinutes;
         this.errorMinutes = errorMinutes;
+    }
+
+    public void applyRecalcResult(TripRecalcPhase recalcPhase, LocalDateTime nextRecalcAt) {
+        this.recalcPhase = Objects.requireNonNull(recalcPhase, "recalcPhase must not be null");
+        this.nextRecalcAt = Objects.requireNonNull(nextRecalcAt, "nextRecalcAt must not be null");
+    }
+
+    public void holdRecalcUntil(LocalDateTime nextRecalcAt) {
+        this.nextRecalcAt = Objects.requireNonNull(nextRecalcAt, "nextRecalcAt must not be null");
+    }
+
+    public void markFinalized(LocalDateTime finalDepartureTime) {
+        this.finalDepartureTime = Objects.requireNonNull(
+                finalDepartureTime,
+                "finalDepartureTime must not be null"
+        );
+        this.recalcPhase = TripRecalcPhase.DONE;
+        this.nextRecalcAt = null;
+        this.status = TripStatus.SCHEDULED;
     }
 }
