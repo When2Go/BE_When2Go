@@ -26,6 +26,7 @@ Best practices and common pitfalls for JPA/Hibernate in Spring applications.
 | Slow queries | Performance issues | Pagination, projections, indexes |
 | Dirty checking overhead | Slow updates | Read-only transactions, DTOs |
 | Lost updates | Concurrent modifications | Optimistic locking (@Version) |
+| Connection pool exhaustion | Slow external calls inside `@Transactional` hold DB connections; `REQUIRES_NEW` doubles the hold | Load snapshot/DTO in a short transaction, **call external APIs outside the transaction**, then open a new transaction to persist results |
 
 ---
 
