@@ -7,7 +7,7 @@ import org.example.when2go.domain.user.enums.Platform;
 import java.time.LocalDateTime;
 
 public record UserResponse(
-        Long UserId,
+        Long userId,
         String deviceId,
         Platform platform,
         Integer bufferMinutes,
