@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 import org.example.when2go.domain.notification.service.NotificationScheduleService;
-import org.example.when2go.domain.route.client.RouteSearchResult;
+import org.example.when2go.domain.route.dto.RouteSearchResult;
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.enums.TripRecalcPhase;

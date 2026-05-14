@@ -1,4 +1,4 @@
-package org.example.when2go.domain.route.client;
+package org.example.when2go.domain.route.dto;
 
 public record RouteSearchResult(int totalMinutes) {
 

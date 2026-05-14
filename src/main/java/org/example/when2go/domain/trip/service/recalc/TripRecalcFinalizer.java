@@ -4,7 +4,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.notification.service.NotificationScheduleService;
-import org.example.when2go.domain.route.client.RouteSearchResult;
+import org.example.when2go.domain.route.dto.RouteSearchResult;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.enums.TripRecalcPhase;
 import org.example.when2go.domain.trip.repository.TripRepository;

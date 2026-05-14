@@ -25,6 +25,7 @@ public class TripRecalcClaimService {
             return List.of();
         }
 
+        // FOR UPDATE 락은 트랜잭션 종료 시 풀리므로, next_recalc_at을 미래로 밀어 soft lock 유지
         LocalDateTime holdUntil = LocalDateTime.now(clock)
                 .plus(tripRecalcProperties.getClaimHoldDuration());
         tripRepository.updateNextRecalcAt(tripIds, holdUntil);
