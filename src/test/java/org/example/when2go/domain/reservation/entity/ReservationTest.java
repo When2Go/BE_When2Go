@@ -33,7 +33,7 @@ class ReservationTest {
                 .destName("office")
                 .destLat(37.2)
                 .destLng(127.2)
-                .routeOption(RouteOption.OPTIMAL)
+                .routeOption(RouteOption.TRANSIT)
                 .arrivalTime(LocalTime.of(9, 0))
                 .reservationType(ReservationType.ONCE)
                 .reservationDate(reservationDate)
@@ -41,7 +41,7 @@ class ReservationTest {
 
         assertThat(reservation.getUser()).isEqualTo(user);
         assertThat(reservation.getOriginName()).isEqualTo("home");
-        assertThat(reservation.getRouteOption()).isEqualTo(RouteOption.OPTIMAL);
+        assertThat(reservation.getRouteOption()).isEqualTo(RouteOption.TRANSIT);
         assertThat(reservation.getReservationType()).isEqualTo(ReservationType.ONCE);
         assertThat(reservation.getReservationDate()).isEqualTo(reservationDate);
         assertThat(reservation.getRepeatDays()).isNull();
@@ -64,7 +64,7 @@ class ReservationTest {
                 .destName("office")
                 .destLat(37.2)
                 .destLng(127.2)
-                .routeOption(RouteOption.OPTIMAL)
+                .routeOption(RouteOption.DRIVE)
                 .arrivalTime(LocalTime.of(9, 0))
                 .reservationType(ReservationType.REPEAT)
                 .repeatDays(repeatDays)
@@ -117,7 +117,7 @@ class ReservationTest {
                         .destName("office")
                         .destLat(37.2)
                         .destLng(127.2)
-                        .routeOption(RouteOption.OPTIMAL)
+                        .routeOption(RouteOption.DRIVE)
                         .arrivalTime(LocalTime.of(9, 0))
                         .reservationType(ReservationType.ONCE)
                         .build())
@@ -141,7 +141,7 @@ class ReservationTest {
                         .destName("office")
                         .destLat(37.2)
                         .destLng(127.2)
-                        .routeOption(RouteOption.OPTIMAL)
+                        .routeOption(RouteOption.DRIVE)
                         .arrivalTime(LocalTime.of(9, 0))
                         .reservationType(ReservationType.REPEAT)
                         .build())
@@ -165,7 +165,7 @@ class ReservationTest {
                         .destName("office")
                         .destLat(37.2)
                         .destLng(127.2)
-                        .routeOption(RouteOption.OPTIMAL)
+                        .routeOption(RouteOption.DRIVE)
                         .arrivalTime(LocalTime.of(9, 0))
                         .reservationType(ReservationType.REPEAT)
                         .repeatDays(Set.of(DayOfWeek.MONDAY))

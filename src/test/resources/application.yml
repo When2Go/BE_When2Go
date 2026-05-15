@@ -1,0 +1,4 @@
+google:
+  routes:
+    api-key: test-key
+    base-url: https://routes.googleapis.com
