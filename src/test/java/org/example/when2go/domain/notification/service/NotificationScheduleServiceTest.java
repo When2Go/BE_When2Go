@@ -64,7 +64,7 @@ class NotificationScheduleServiceTest {
                 .destLat(37.2)
                 .destLng(127.2)
                 .arrivalTime(LocalDateTime.of(2026, 5, 7, 10, 0))
-                .routeOption(RouteOption.OPTIMAL)
+                .routeOption(RouteOption.TRANSIT)
                 .bufferMinutes(10)
                 .finalDepartureTime(finalDepartureTime)
                 .build();

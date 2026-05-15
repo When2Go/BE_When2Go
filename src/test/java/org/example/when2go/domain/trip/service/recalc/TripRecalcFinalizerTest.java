@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
 import org.example.when2go.domain.notification.service.NotificationScheduleService;
+import java.util.List;
 import org.example.when2go.domain.route.dto.RouteSearchResult;
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.entity.Trip;
@@ -43,7 +44,7 @@ class TripRecalcFinalizerTest {
         Trip trip = trip(TripRecalcPhase.PHASE_3, LocalDateTime.of(2026, 5, 12, 10, 0));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
-        finalizer.finalizeRecalc(1L, new RouteSearchResult(40));
+        finalizer.finalizeRecalc(1L, new RouteSearchResult(List.of(new RouteSearchResult.Route("2400s"))));
 
         assertThat(trip.getFinalDepartureTime()).isEqualTo(LocalDateTime.of(2026, 5, 12, 9, 10));
         assertThat(trip.getRecalcPhase()).isEqualTo(TripRecalcPhase.DONE);
@@ -57,7 +58,7 @@ class TripRecalcFinalizerTest {
         Trip trip = trip(TripRecalcPhase.INITIAL, LocalDateTime.of(2026, 5, 12, 11, 0));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
-        finalizer.finalizeRecalc(1L, new RouteSearchResult(40));
+        finalizer.finalizeRecalc(1L, new RouteSearchResult(List.of(new RouteSearchResult.Route("2400s"))));
 
         assertThat(trip.getFinalDepartureTime()).isNull();
         assertThat(trip.getRecalcPhase()).isEqualTo(TripRecalcPhase.PHASE_1);
@@ -81,7 +82,7 @@ class TripRecalcFinalizerTest {
                 .destLat(37.2)
                 .destLng(127.2)
                 .arrivalTime(arrivalTime)
-                .routeOption(RouteOption.OPTIMAL)
+                .routeOption(RouteOption.TRANSIT)
                 .bufferMinutes(10)
                 .recalcPhase(recalcPhase)
                 .nextRecalcAt(LocalDateTime.of(2026, 5, 12, 9, 0))

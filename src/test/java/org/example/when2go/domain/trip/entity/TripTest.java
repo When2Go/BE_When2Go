@@ -31,13 +31,13 @@ class TripTest {
                 .destLat(37.2)
                 .destLng(127.2)
                 .arrivalTime(arrivalTime)
-                .routeOption(RouteOption.OPTIMAL)
+                .routeOption(RouteOption.TRANSIT)
                 .bufferMinutes(10)
                 .build();
 
         assertThat(trip.getUser()).isEqualTo(user);
         assertThat(trip.getArrivalTime()).isEqualTo(arrivalTime);
-        assertThat(trip.getRouteOption()).isEqualTo(RouteOption.OPTIMAL);
+        assertThat(trip.getRouteOption()).isEqualTo(RouteOption.TRANSIT);
         assertThat(trip.getStatus()).isEqualTo(TripStatus.PENDING);
         assertThat(trip.getRecalcPhase()).isEqualTo(TripRecalcPhase.INITIAL);
         assertThat(trip.getNextRecalcAt()).isNull();
@@ -61,7 +61,7 @@ class TripTest {
                         .destLat(37.2)
                         .destLng(127.2)
                         .arrivalTime(LocalDateTime.of(2026, 5, 7, 9, 0))
-                        .routeOption(RouteOption.OPTIMAL)
+                        .routeOption(RouteOption.TRANSIT)
                         .bufferMinutes(null)
                         .build())
                 .withMessage("bufferMinutes must not be null");
@@ -112,7 +112,7 @@ class TripTest {
                 .destLat(37.2)
                 .destLng(127.2)
                 .arrivalTime(LocalDateTime.of(2026, 5, 7, 9, 0))
-                .routeOption(RouteOption.OPTIMAL)
+                .routeOption(RouteOption.TRANSIT)
                 .bufferMinutes(10)
                 .build();
     }
