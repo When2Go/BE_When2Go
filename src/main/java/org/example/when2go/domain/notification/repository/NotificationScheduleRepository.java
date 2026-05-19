@@ -1,6 +1,5 @@
 package org.example.when2go.domain.notification.repository;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import org.example.when2go.domain.notification.entity.NotificationSchedule;
@@ -32,38 +31,18 @@ public interface NotificationScheduleRepository extends JpaRepository<Notificati
             JOIN FETCH s.user
             JOIN FETCH s.trip
             WHERE s.id IN :ids
-              AND s.status = :status
             """)
-    List<NotificationSchedule> findAllByIdInAndStatusWithUserAndTrip(
-            @Param("ids") Collection<Long> ids,
-            @Param("status") NotificationScheduleStatus status
-    );
+    List<NotificationSchedule> findAllByIdInWithUserAndTrip(@Param("ids") Collection<Long> ids);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
             UPDATE NotificationSchedule s
-            SET s.status = :status,
-                s.processingStartedAt = :processingStartedAt
+            SET s.status = :status
             WHERE s.id IN :ids
             """)
-    int updateProcessing(
+    int updateStatus(
             @Param("ids") Collection<Long> ids,
-            @Param("status") NotificationScheduleStatus status,
-            @Param("processingStartedAt") LocalDateTime processingStartedAt
-    );
-
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("""
-            UPDATE NotificationSchedule s
-            SET s.status = :targetStatus,
-                s.processingStartedAt = NULL
-            WHERE s.status = :sourceStatus
-              AND s.processingStartedAt < :threshold
-            """)
-    int resetStuckProcessing(
-            @Param("sourceStatus") NotificationScheduleStatus sourceStatus,
-            @Param("targetStatus") NotificationScheduleStatus targetStatus,
-            @Param("threshold") LocalDateTime threshold
+            @Param("status") NotificationScheduleStatus status
     );
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
