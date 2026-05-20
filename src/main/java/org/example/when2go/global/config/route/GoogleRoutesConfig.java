@@ -15,14 +15,11 @@ public class GoogleRoutesConfig {
     private String baseUrl;
 
     @Bean
-    public WebClient googleRoutesWebClient()  {
+    public WebClient googleRoutesWebClient() {
         return WebClient.builder()
                 .baseUrl(baseUrl)
                 .defaultHeader("X-Goog-Api-Key", apiKey)
-                .defaultHeader("X-Goog-FieldMask", "routes.duration")
+                .defaultHeader("X-Goog-FieldMask", "*")
                 .build();
     }
-
-
-
 }
