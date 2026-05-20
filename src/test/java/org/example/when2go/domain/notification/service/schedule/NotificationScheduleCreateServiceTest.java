@@ -1,4 +1,4 @@
-package org.example.when2go.domain.notification.service;
+package org.example.when2go.domain.notification.service.schedule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -16,12 +16,12 @@ import org.example.when2go.domain.user.enums.Platform;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
-class NotificationScheduleServiceTest {
+class NotificationScheduleCreateServiceTest {
 
     private final NotificationScheduleRepository notificationScheduleRepository =
             org.mockito.Mockito.mock(NotificationScheduleRepository.class);
-    private final NotificationScheduleService notificationScheduleService =
-            new NotificationScheduleService(notificationScheduleRepository);
+    private final NotificationScheduleCreateService notificationScheduleCreateService =
+            new NotificationScheduleCreateService(notificationScheduleRepository);
 
     @Test
     void createDepartureSchedulesCreatesTenMinuteAndNowSchedules() {
@@ -29,7 +29,7 @@ class NotificationScheduleServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
         Trip trip = trip(LocalDateTime.of(2026, 5, 7, 9, 0));
 
-        notificationScheduleService.createDepartureSchedules(trip);
+        notificationScheduleCreateService.createDepartureSchedules(trip);
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<NotificationSchedule>> captor = ArgumentCaptor.forClass(List.class);

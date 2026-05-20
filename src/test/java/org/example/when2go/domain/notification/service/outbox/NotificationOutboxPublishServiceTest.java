@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.example.when2go.global.config.notification.NotificationProperties;
+import org.example.when2go.domain.notification.client.NotificationSqsClient;
 import org.example.when2go.domain.notification.dto.NotificationSqsBatchResult;
 import org.example.when2go.domain.notification.entity.NotificationSchedule;
 import org.example.when2go.domain.notification.entity.NotificationScheduleOutbox;
@@ -17,7 +18,7 @@ import org.example.when2go.domain.user.enums.Platform;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 
-class NotificationScheduleOutboxPublisherTest {
+class NotificationOutboxPublishServiceTest {
 
     private final NotificationOutboxClaimService notificationOutboxClaimService =
             org.mockito.Mockito.mock(NotificationOutboxClaimService.class);
@@ -26,8 +27,8 @@ class NotificationScheduleOutboxPublisherTest {
     private final NotificationSqsClient notificationSqsClient =
             org.mockito.Mockito.mock(NotificationSqsClient.class);
     private final NotificationProperties notificationProperties = new NotificationProperties();
-    private final NotificationScheduleOutboxPublisher publisher =
-            new NotificationScheduleOutboxPublisher(
+    private final NotificationOutboxPublishService notificationOutboxPublishService =
+            new NotificationOutboxPublishService(
                     notificationOutboxClaimService,
                     notificationOutboxStatusService,
                     notificationSqsClient,
@@ -44,7 +45,7 @@ class NotificationScheduleOutboxPublisherTest {
         when(notificationSqsClient.sendBatch(org.mockito.ArgumentMatchers.anyList()))
                 .thenReturn(new NotificationSqsBatchResult(List.of(1L), List.of(2L, 3L)));
 
-        publisher.publishPendingOutboxes();
+        notificationOutboxPublishService.publishPendingOutboxes();
 
         verify(notificationOutboxStatusService).markPublished(List.of(1L));
         verify(notificationOutboxStatusService).markRetryableFailure(List.of(2L));

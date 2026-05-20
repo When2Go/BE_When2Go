@@ -23,11 +23,11 @@ class NotificationScheduleTest {
                 .scheduledAt(LocalDateTime.of(2026, 5, 7, 9, 0))
                 .build();
 
-        schedule.startProcessing(LocalDateTime.of(2026, 5, 7, 8, 59));
+        assertThat(schedule.getStatus()).isEqualTo(NotificationScheduleStatus.PENDING);
+
         schedule.markDone();
 
         assertThat(schedule.getStatus()).isEqualTo(NotificationScheduleStatus.DONE);
-        assertThat(schedule.getProcessingStartedAt()).isNull();
     }
 
     @Test

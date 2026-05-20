@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Optional;
-import org.example.when2go.domain.notification.service.NotificationScheduleService;
+import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
 import org.example.when2go.domain.route.dto.RouteSearchResult;
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.entity.Trip;
@@ -24,8 +24,8 @@ class TripRecalcFinalizerTest {
 
     private final TripRepository tripRepository = org.mockito.Mockito.mock(TripRepository.class);
     private final TripRecalcPhasePolicy phasePolicy = new TripRecalcPhasePolicy();
-    private final NotificationScheduleService notificationScheduleService =
-            org.mockito.Mockito.mock(NotificationScheduleService.class);
+    private final NotificationScheduleCreateService notificationScheduleCreateService =
+            org.mockito.Mockito.mock(NotificationScheduleCreateService.class);
     private final Clock clock = Clock.fixed(
             Instant.parse("2026-05-12T00:00:00Z"),
             ZoneId.of("Asia/Seoul")
@@ -33,7 +33,7 @@ class TripRecalcFinalizerTest {
     private final TripRecalcFinalizer finalizer = new TripRecalcFinalizer(
             tripRepository,
             phasePolicy,
-            notificationScheduleService,
+            notificationScheduleCreateService,
             clock
     );
 
@@ -48,7 +48,7 @@ class TripRecalcFinalizerTest {
         assertThat(trip.getFinalDepartureTime()).isEqualTo(LocalDateTime.of(2026, 5, 12, 9, 10));
         assertThat(trip.getRecalcPhase()).isEqualTo(TripRecalcPhase.DONE);
         assertThat(trip.getNextRecalcAt()).isNull();
-        verify(notificationScheduleService).createDepartureSchedules(trip);
+        verify(notificationScheduleCreateService).createDepartureSchedules(trip);
     }
 
     // DONE이 아닌 중간 phase는 다음 재계산 시각만 갱신하고 알림은 생성하지 않는지 확인한다.
@@ -62,7 +62,7 @@ class TripRecalcFinalizerTest {
         assertThat(trip.getFinalDepartureTime()).isNull();
         assertThat(trip.getRecalcPhase()).isEqualTo(TripRecalcPhase.PHASE_1);
         assertThat(trip.getNextRecalcAt()).isEqualTo(LocalDateTime.of(2026, 5, 12, 9, 10));
-        verify(notificationScheduleService, never()).createDepartureSchedules(trip);
+        verify(notificationScheduleCreateService, never()).createDepartureSchedules(trip);
     }
 
     private Trip trip(TripRecalcPhase recalcPhase, LocalDateTime arrivalTime) {
