@@ -1,8 +1,10 @@
 package org.example.when2go.domain.route.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder
 public record RouteSearchRequest(
         Waypoint origin,
         Waypoint destination,
