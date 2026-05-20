@@ -1,4 +1,4 @@
-package org.example.when2go.domain.notification.service;
+package org.example.when2go.domain.notification.service.schedule;
 
 import java.util.List;
 import java.util.Objects;
@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class NotificationScheduleService {
+public class NotificationScheduleCreateService {
 
     private final NotificationScheduleRepository notificationScheduleRepository;
 
