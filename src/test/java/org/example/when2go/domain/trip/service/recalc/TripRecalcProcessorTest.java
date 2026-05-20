@@ -11,7 +11,6 @@ import java.util.Optional;
 import org.example.when2go.domain.route.client.GoogleRouteClient;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
 import org.example.when2go.domain.route.dto.RouteSearchResult;
-import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.junit.jupiter.api.Test;
@@ -43,9 +42,10 @@ class TripRecalcProcessorTest {
         when(trip.getDestLat()).thenReturn(37.6);
         when(trip.getDestLng()).thenReturn(127.1);
         when(trip.getArrivalTime()).thenReturn(arrivalTime);
-        when(trip.getRouteOption()).thenReturn(RouteOption.TRANSIT);
-
-        RouteSearchResult result = new RouteSearchResult(List.of(new RouteSearchResult.Route("2400s")));
+        RouteSearchResult result = new RouteSearchResult(
+                List.of(new RouteSearchResult.Route(null, null, "2400s", null, null, null, null, null, null)),
+                null
+        );
         when(googleRouteClientProvider.getIfAvailable()).thenReturn(googleRouteClient);
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
         when(googleRouteClient.search(any(RouteSearchRequest.class))).thenReturn(result);
@@ -59,7 +59,7 @@ class TripRecalcProcessorTest {
         assertThat(captured.origin().location().latLng().longitude()).isEqualTo(127.0);
         assertThat(captured.destination().location().latLng().latitude()).isEqualTo(37.6);
         assertThat(captured.destination().location().latLng().longitude()).isEqualTo(127.1);
-        assertThat(captured.travelMode()).isEqualTo("TRANSIT");
+        assertThat(captured.travelMode()).isNull();
         assertThat(captured.routingPreference()).isNull();
 
         verify(tripRecalcFinalizer).finalizeRecalc(1L, result);
