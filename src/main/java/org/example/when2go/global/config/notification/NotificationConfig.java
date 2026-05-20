@@ -1,7 +1,7 @@
 package org.example.when2go.global.config.notification;
 
 import org.example.when2go.global.aws.sqs.AwsNotificationSqsClient;
-import org.example.when2go.domain.notification.service.outbox.NotificationSqsClient;
+import org.example.when2go.domain.notification.client.NotificationSqsClient;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
