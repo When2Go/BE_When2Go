@@ -44,7 +44,7 @@ class TripRecalcFinalizerTest {
         Trip trip = trip(TripRecalcPhase.PHASE_3, LocalDateTime.of(2026, 5, 12, 10, 0));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
-        finalizer.finalizeRecalc(1L, new RouteSearchResult(List.of(new RouteSearchResult.Route("2400s"))));
+        finalizer.finalizeRecalc(1L, new RouteSearchResult(List.of(new RouteSearchResult.Route(null, null, "2400s", null, null, null, null, null, null)), null));
 
         assertThat(trip.getFinalDepartureTime()).isEqualTo(LocalDateTime.of(2026, 5, 12, 9, 10));
         assertThat(trip.getRecalcPhase()).isEqualTo(TripRecalcPhase.DONE);
@@ -58,7 +58,7 @@ class TripRecalcFinalizerTest {
         Trip trip = trip(TripRecalcPhase.INITIAL, LocalDateTime.of(2026, 5, 12, 11, 0));
         when(tripRepository.findById(1L)).thenReturn(Optional.of(trip));
 
-        finalizer.finalizeRecalc(1L, new RouteSearchResult(List.of(new RouteSearchResult.Route("2400s"))));
+        finalizer.finalizeRecalc(1L, new RouteSearchResult(List.of(new RouteSearchResult.Route(null, null, "2400s", null, null, null, null, null, null)), null));
 
         assertThat(trip.getFinalDepartureTime()).isNull();
         assertThat(trip.getRecalcPhase()).isEqualTo(TripRecalcPhase.PHASE_1);
