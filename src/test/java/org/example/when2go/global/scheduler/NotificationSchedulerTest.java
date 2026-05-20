@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 import org.example.when2go.domain.notification.event.NotificationScheduleScanRequestedEvent;
-import org.example.when2go.domain.notification.service.recovery.NotificationProcessingRecoveryService;
+import org.example.when2go.domain.notification.service.outbox.NotificationOutboxRecoveryService;
 import org.example.when2go.global.config.notification.NotificationProperties;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,13 +14,13 @@ class NotificationSchedulerTest {
 
     private final ApplicationEventPublisher eventPublisher =
             org.mockito.Mockito.mock(ApplicationEventPublisher.class);
-    private final NotificationProcessingRecoveryService notificationProcessingRecoveryService =
-            org.mockito.Mockito.mock(NotificationProcessingRecoveryService.class);
+    private final NotificationOutboxRecoveryService notificationOutboxRecoveryService =
+            org.mockito.Mockito.mock(NotificationOutboxRecoveryService.class);
     private final NotificationProperties notificationProperties = new NotificationProperties();
     private final NotificationScheduler notificationScheduler =
             new NotificationScheduler(
                     eventPublisher,
-                    notificationProcessingRecoveryService,
+                    notificationOutboxRecoveryService,
                     notificationProperties
             );
 

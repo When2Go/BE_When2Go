@@ -3,7 +3,7 @@ package org.example.when2go.domain.trip.service.recalc;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
-import org.example.when2go.domain.notification.service.NotificationScheduleService;
+import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
 import org.example.when2go.domain.route.dto.RouteSearchResult;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.enums.TripRecalcPhase;
@@ -18,7 +18,7 @@ public class TripRecalcFinalizer {
 
     private final TripRepository tripRepository;
     private final TripRecalcPhasePolicy phasePolicy;
-    private final NotificationScheduleService notificationScheduleService;
+    private final NotificationScheduleCreateService notificationScheduleCreateService;
     private final Clock clock;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -41,7 +41,7 @@ public class TripRecalcFinalizer {
 
         if (nextPhase == TripRecalcPhase.DONE) {
             trip.markFinalized(departureTime);
-            notificationScheduleService.createDepartureSchedules(trip);
+            notificationScheduleCreateService.createDepartureSchedules(trip);
             return;
         }
 

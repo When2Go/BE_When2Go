@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.example.when2go.domain.notification.dto.NotificationSqsBatchResult;
 import org.example.when2go.domain.notification.dto.NotificationSqsPayload;
-import org.example.when2go.domain.notification.service.outbox.NotificationSqsClient;
+import org.example.when2go.domain.notification.client.NotificationSqsClient;
 import org.springframework.util.StringUtils;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.BatchResultErrorEntry;

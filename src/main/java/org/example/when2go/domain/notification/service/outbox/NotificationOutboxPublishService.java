@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.global.config.notification.NotificationProperties;
+import org.example.when2go.domain.notification.client.NotificationSqsClient;
 import org.example.when2go.domain.notification.dto.NotificationSqsBatchResult;
 import org.example.when2go.domain.notification.dto.NotificationSqsPayload;
 import org.example.when2go.domain.notification.entity.NotificationScheduleOutbox;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @ConditionalOnProperty(prefix = "notification.sqs", name = "enabled", havingValue = "true")
-public class NotificationScheduleOutboxPublisher {
+public class NotificationOutboxPublishService {
 
     private final NotificationOutboxClaimService notificationOutboxClaimService;
     private final NotificationOutboxStatusService notificationOutboxStatusService;
@@ -33,6 +34,8 @@ public class NotificationScheduleOutboxPublisher {
 
         int publishedCount = 0;
         int batchSize = Math.min(notificationProperties.getOutbox().getPublishBatchSize(), 10);
+
+        // SQS 특징 상 10개 씩 나눠서 전송
         for (int start = 0; start < outboxes.size(); start += batchSize) {
             List<NotificationScheduleOutbox> batch = outboxes.subList(start, Math.min(start + batchSize, outboxes.size()));
             publishedCount += publishBatch(batch);
@@ -54,6 +57,7 @@ public class NotificationScheduleOutboxPublisher {
         }
     }
 
+    // converter
     private List<NotificationSqsPayload> toPayloads(List<NotificationScheduleOutbox> outboxes) {
         return outboxes.stream()
                 .map(outbox -> new NotificationSqsPayload(

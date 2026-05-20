@@ -1,4 +1,4 @@
-package org.example.when2go.domain.notification.service.outbox;
+package org.example.when2go.domain.notification.client;
 
 import java.util.List;
 import org.example.when2go.domain.notification.dto.NotificationSqsBatchResult;
