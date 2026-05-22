@@ -17,6 +17,7 @@ import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.entity.TripRecalcPhase;
 import org.example.when2go.domain.trip.repository.TripRepository;
+import org.example.when2go.domain.trip.service.recalc.policy.TripRecalcPhasePolicy;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.domain.user.entity.Platform;
 import org.junit.jupiter.api.Test;

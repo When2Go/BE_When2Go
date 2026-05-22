@@ -1,4 +1,4 @@
-package org.example.when2go.domain.trip.service.recalc;
+package org.example.when2go.domain.trip.service.recalc.policy;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
