@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import org.example.when2go.domain.route.client.GoogleRouteClient;
+import org.example.when2go.domain.route.client.RouteClient;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
 import org.example.when2go.domain.route.dto.RouteSearchResult;
 import org.example.when2go.domain.trip.entity.Trip;
@@ -19,9 +19,9 @@ import org.springframework.beans.factory.ObjectProvider;
 
 class TripRecalcProcessorTest {
 
-    private final GoogleRouteClient googleRouteClient = org.mockito.Mockito.mock(GoogleRouteClient.class);
+    private final RouteClient googleRouteClient = org.mockito.Mockito.mock(RouteClient.class);
     @SuppressWarnings("unchecked")
-    private final ObjectProvider<GoogleRouteClient> googleRouteClientProvider =
+    private final ObjectProvider<RouteClient> googleRouteClientProvider =
             org.mockito.Mockito.mock(ObjectProvider.class);
     private final TripRecalcFinalizer tripRecalcFinalizer =
             org.mockito.Mockito.mock(TripRecalcFinalizer.class);
@@ -59,7 +59,7 @@ class TripRecalcProcessorTest {
         assertThat(captured.origin().location().latLng().longitude()).isEqualTo(127.0);
         assertThat(captured.destination().location().latLng().latitude()).isEqualTo(37.6);
         assertThat(captured.destination().location().latLng().longitude()).isEqualTo(127.1);
-        assertThat(captured.travelMode()).isNull();
+        assertThat(captured.travelMode()).isEqualTo("TRANSIT");
         assertThat(captured.routingPreference()).isNull();
 
         verify(tripRecalcFinalizer).finalizeRecalc(1L, result);
