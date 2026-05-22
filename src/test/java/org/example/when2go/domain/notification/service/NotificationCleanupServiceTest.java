@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Collection;
-import org.example.when2go.domain.notification.enums.NotificationOutboxStatus;
+import org.example.when2go.domain.notification.entity.NotificationOutboxStatus;
 import org.example.when2go.domain.notification.repository.NotificationScheduleOutboxRepository;
 import org.example.when2go.domain.notification.repository.NotificationScheduleRepository;
 import org.junit.jupiter.api.Test;

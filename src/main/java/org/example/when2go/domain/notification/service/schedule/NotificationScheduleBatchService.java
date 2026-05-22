@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.notification.dto.NotificationMessage;
 import org.example.when2go.domain.notification.entity.NotificationSchedule;
 import org.example.when2go.domain.notification.entity.NotificationScheduleOutbox;
-import org.example.when2go.domain.notification.enums.NotificationScheduleStatus;
+import org.example.when2go.domain.notification.entity.NotificationScheduleStatus;
 import org.example.when2go.domain.notification.event.NotificationOutboxesCreatedEvent;
 import org.example.when2go.domain.notification.repository.NotificationScheduleOutboxRepository;
 import org.example.when2go.domain.notification.repository.NotificationScheduleRepository;

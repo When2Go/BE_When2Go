@@ -3,7 +3,7 @@ package org.example.when2go.domain.notification.repository;
 import java.util.Collection;
 import java.util.List;
 import org.example.when2go.domain.notification.entity.NotificationSchedule;
-import org.example.when2go.domain.notification.enums.NotificationScheduleStatus;
+import org.example.when2go.domain.notification.entity.NotificationScheduleStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

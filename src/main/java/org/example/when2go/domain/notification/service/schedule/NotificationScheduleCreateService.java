@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.notification.entity.NotificationSchedule;
-import org.example.when2go.domain.notification.enums.NotificationType;
+import org.example.when2go.domain.notification.entity.NotificationType;
 import org.example.when2go.domain.notification.repository.NotificationScheduleRepository;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.springframework.stereotype.Service;
