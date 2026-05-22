@@ -22,7 +22,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.when2go.domain.reservation.converter.DayOfWeekSetConverter;
-import org.example.when2go.domain.reservation.enums.ReservationType;
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.global.common.entity.BaseEntity;

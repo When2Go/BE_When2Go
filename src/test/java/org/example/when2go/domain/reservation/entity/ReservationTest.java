@@ -8,7 +8,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Set;
-import org.example.when2go.domain.reservation.enums.ReservationType;
+
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.domain.user.enums.Platform;
