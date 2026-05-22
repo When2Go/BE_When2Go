@@ -61,14 +61,14 @@ public class NotificationOutboxPublishService {
     private List<NotificationSqsPayload> toPayloads(List<NotificationScheduleOutbox> outboxes) {
         return outboxes.stream()
                 .map(outbox -> new NotificationSqsPayload(
-                        outbox.getId(),
-                        outbox.getSchedule().getId(),
-                        outbox.getTrip().getId(),
-                        outbox.getUser().getId(),
-                        outbox.getType(),
+                        String.valueOf(outbox.getId()),
+                        outbox.getUser().getFcmToken(),
                         outbox.getTitle(),
                         outbox.getBody(),
-                        outbox.getDedupKey()
+                        new NotificationSqsPayload.NotificationData(
+                                String.valueOf(outbox.getTrip().getId()),
+                                outbox.getType().name()
+                        )
                 ))
                 .toList();
     }

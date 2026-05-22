@@ -31,7 +31,7 @@ public class AppUser extends BaseEntity {
     @Column(name = "device_id", nullable = false, unique = true)
     private String deviceId;
 
-    @Column(name = "fcm_token", length = 512)
+    @Column(name = "fcm_token", nullable = false, length = 512)
     private String fcmToken;
 
     @Enumerated(EnumType.STRING)

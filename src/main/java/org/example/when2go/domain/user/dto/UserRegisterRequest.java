@@ -7,5 +7,5 @@ import org.example.when2go.domain.user.enums.Platform;
 public record UserRegisterRequest(
         @NotBlank String deviceId,
         @NotNull Platform platform,
-        String fcmToken
+        @NotBlank String fcmToken
 ) {}

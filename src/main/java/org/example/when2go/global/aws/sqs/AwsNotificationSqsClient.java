@@ -35,7 +35,7 @@ public class AwsNotificationSqsClient implements NotificationSqsClient {
     @Override
     public NotificationSqsBatchResult sendBatch(List<NotificationSqsPayload> payloads) {
         Map<String, NotificationSqsPayload> payloadByEntryId = payloads.stream()
-                .collect(Collectors.toMap(payload -> payload.outboxId().toString(), Function.identity()));
+                .collect(Collectors.toMap(NotificationSqsPayload::outboxId, Function.identity()));
         List<SendMessageBatchRequestEntry> entries = payloads.stream()
                 .map(this::toEntry)
                 .toList();
@@ -61,7 +61,7 @@ public class AwsNotificationSqsClient implements NotificationSqsClient {
     private SendMessageBatchRequestEntry toEntry(NotificationSqsPayload payload) {
         try {
             return SendMessageBatchRequestEntry.builder()
-                    .id(payload.outboxId().toString())
+                    .id(payload.outboxId())
                     .messageBody(objectMapper.writeValueAsString(payload))
                     .build();
         } catch (JsonProcessingException e) {
