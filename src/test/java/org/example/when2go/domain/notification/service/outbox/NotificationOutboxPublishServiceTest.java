@@ -1,13 +1,14 @@
 package org.example.when2go.domain.notification.service.outbox;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import org.example.when2go.global.config.notification.NotificationProperties;
 import org.example.when2go.domain.notification.client.NotificationSqsClient;
 import org.example.when2go.domain.notification.dto.NotificationSqsBatchResult;
+import org.example.when2go.domain.notification.dto.NotificationSqsPayload;
 import org.example.when2go.domain.notification.entity.NotificationSchedule;
 import org.example.when2go.domain.notification.entity.NotificationScheduleOutbox;
 import org.example.when2go.domain.notification.enums.NotificationType;
@@ -15,7 +16,9 @@ import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.domain.user.enums.Platform;
+import org.example.when2go.global.config.notification.NotificationProperties;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class NotificationOutboxPublishServiceTest {
@@ -35,6 +38,7 @@ class NotificationOutboxPublishServiceTest {
                     notificationProperties
             );
 
+    // SQS 발행 성공/실패 결과에 따라 outbox 상태를 나누고, Lambda 발송에 필요한 payload 값을 포함하는지 확인한다.
     @Test
     void publishPendingOutboxesMarksSuccessAndSplitsFailuresByRetryCount() {
         NotificationScheduleOutbox success = outbox(1L, 0);
@@ -50,6 +54,16 @@ class NotificationOutboxPublishServiceTest {
         verify(notificationOutboxStatusService).markPublished(List.of(1L));
         verify(notificationOutboxStatusService).markRetryableFailure(List.of(2L));
         verify(notificationOutboxStatusService).markFailed(List.of(3L));
+
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<NotificationSqsPayload>> payloadCaptor = ArgumentCaptor.forClass(List.class);
+        verify(notificationSqsClient).sendBatch(payloadCaptor.capture());
+
+        NotificationSqsPayload payload = payloadCaptor.getValue().get(0);
+        assertThat(payload.outboxId()).isEqualTo("1");
+        assertThat(payload.fcmToken()).isEqualTo("token");
+        assertThat(payload.data().tripId()).isEqualTo("21");
+        assertThat(payload.data().type()).isEqualTo("DEPART_NOW");
     }
 
     private NotificationScheduleOutbox outbox(Long id, int retryCount) {
