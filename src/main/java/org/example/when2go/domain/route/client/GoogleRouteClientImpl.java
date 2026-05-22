@@ -6,12 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
-public class GoogleRouteClientImpl implements GoogleRouteClient {
-
-    private static final String TRAVEL_MODE = "TRANSIT";
-    private static final boolean COMPUTE_ALTERNATIVE_ROUTES = true;
-    private static final String LANGUAGE_CODE = "ko-KR";
-    private static final String UNITS = "METRIC";
+public class GoogleRouteClientImpl implements RouteClient {
 
     private final WebClient webClient;
 
@@ -21,19 +16,10 @@ public class GoogleRouteClientImpl implements GoogleRouteClient {
 
     @Override
     public RouteSearchResult search(RouteSearchRequest request) {
-        RouteSearchRequest body = RouteSearchRequest.builder()
-                .origin(request.origin())
-                .destination(request.destination())
-                .travelMode(TRAVEL_MODE)
-                .computeAlternativeRoutes(COMPUTE_ALTERNATIVE_ROUTES)
-                .languageCode(LANGUAGE_CODE)
-                .units(UNITS)
-                .arrivalTime(request.arrivalTime())
-                .build();
 
         return webClient.post()
                 .uri("/directions/v2:computeRoutes")
-                .bodyValue(body)
+                .bodyValue(request)
                 .retrieve()
                 .bodyToMono(RouteSearchResult.class)
                 .block();

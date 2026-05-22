@@ -1,10 +1,8 @@
 package org.example.when2go.domain.route;
 
 import org.example.when2go.domain.route.client.GoogleRouteClientImpl;
+import org.example.when2go.domain.route.dto.RouteDTO;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
-import org.example.when2go.domain.route.dto.RouteSearchRequest.Waypoint;
-import org.example.when2go.domain.route.dto.RouteSearchRequest.Waypoint.Location;
-import org.example.when2go.domain.route.dto.RouteSearchRequest.Waypoint.Location.LatLng;
 import org.example.when2go.domain.route.dto.RouteSearchResult;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.junit.jupiter.api.Test;
@@ -24,11 +22,14 @@ class GoogleRouteClientImplTest {
 
         GoogleRouteClientImpl client = new GoogleRouteClientImpl(webClient);
 
-        RouteSearchRequest request = RouteSearchRequest.builder()
-                .origin(new Waypoint(new Location(new LatLng(37.5665, 126.9780))))
-                .destination(new Waypoint(new Location(new LatLng(37.4979, 127.0276))))
-                .arrivalTime("2026-05-16T10:00:00+09:00")
-                .build();
+        RouteDTO routeDTO = new RouteDTO(
+                37.5665,
+                126.9780,
+                37.4979,
+                127.0276,
+                "2026-05-16 10:00"
+        );
+        RouteSearchRequest request = new RouteSearchRequest(routeDTO);
 
         RouteSearchResult result = client.search(request);
         System.out.println("result: " + result);
