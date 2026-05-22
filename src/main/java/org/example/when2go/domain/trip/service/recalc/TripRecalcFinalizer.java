@@ -4,7 +4,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
-import org.example.when2go.domain.route.dto.RouteSearchResult;
+import org.example.when2go.domain.route.dto.RouteSearchResponse;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.enums.TripRecalcPhase;
 import org.example.when2go.domain.trip.repository.TripRepository;
@@ -22,7 +22,7 @@ public class TripRecalcFinalizer {
     private final Clock clock;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void finalizeRecalc(Long tripId, RouteSearchResult result) {
+    public void finalizeRecalc(Long tripId, RouteSearchResponse result) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found: " + tripId));
         if (trip.getRecalcPhase() == TripRecalcPhase.DONE) {
