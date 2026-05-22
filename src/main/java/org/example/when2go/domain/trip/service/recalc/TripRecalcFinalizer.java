@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
 import org.example.when2go.domain.route.dto.RouteSearchResponse;
 import org.example.when2go.domain.trip.entity.Trip;
-import org.example.when2go.domain.trip.enums.TripRecalcPhase;
+import org.example.when2go.domain.trip.entity.TripRecalcPhase;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
