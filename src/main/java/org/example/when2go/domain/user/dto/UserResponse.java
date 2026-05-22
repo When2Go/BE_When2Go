@@ -1,8 +1,8 @@
 package org.example.when2go.domain.user.dto;
 
 import org.example.when2go.domain.user.entity.AppUser;
-import org.example.when2go.domain.user.enums.NotificationMode;
-import org.example.when2go.domain.user.enums.Platform;
+import org.example.when2go.domain.user.entity.NotificationMode;
+import org.example.when2go.domain.user.entity.Platform;
 
 import java.time.LocalDateTime;
 

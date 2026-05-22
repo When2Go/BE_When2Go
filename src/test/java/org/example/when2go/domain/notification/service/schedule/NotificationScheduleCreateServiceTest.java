@@ -12,7 +12,7 @@ import org.example.when2go.domain.notification.repository.NotificationScheduleRe
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.user.entity.AppUser;
-import org.example.when2go.domain.user.enums.Platform;
+import org.example.when2go.domain.user.entity.Platform;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
