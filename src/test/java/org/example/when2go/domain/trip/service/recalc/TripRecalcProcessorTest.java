@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import org.example.when2go.domain.route.client.RouteClient;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
-import org.example.when2go.domain.route.dto.RouteSearchResult;
+import org.example.when2go.domain.route.dto.RouteSearchResponse;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.junit.jupiter.api.Test;
@@ -42,8 +42,8 @@ class TripRecalcProcessorTest {
         when(trip.getDestLat()).thenReturn(37.6);
         when(trip.getDestLng()).thenReturn(127.1);
         when(trip.getArrivalTime()).thenReturn(arrivalTime);
-        RouteSearchResult result = new RouteSearchResult(
-                List.of(new RouteSearchResult.Route(null, null, "2400s", null, null, null, null, null, null)),
+        RouteSearchResponse result = new RouteSearchResponse(
+                List.of(new RouteSearchResponse.Route(null, null, "2400s", null, null, null, null, null, null)),
                 null
         );
         when(googleRouteClientProvider.getIfAvailable()).thenReturn(googleRouteClient);

@@ -1,7 +1,7 @@
 package org.example.when2go.domain.route.client;
 
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
-import org.example.when2go.domain.route.dto.RouteSearchResult;
+import org.example.when2go.domain.route.dto.RouteSearchResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -15,13 +15,13 @@ public class GoogleRouteClientImpl implements RouteClient {
     }
 
     @Override
-    public RouteSearchResult search(RouteSearchRequest request) {
+    public RouteSearchResponse search(RouteSearchRequest request) {
 
         return webClient.post()
                 .uri("/directions/v2:computeRoutes")
                 .bodyValue(request)
                 .retrieve()
-                .bodyToMono(RouteSearchResult.class)
+                .bodyToMono(RouteSearchResponse.class)
                 .block();
     }
 }

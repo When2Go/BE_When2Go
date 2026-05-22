@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.route.client.RouteClient;
 import org.example.when2go.domain.route.dto.RouteDTO;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
-import org.example.when2go.domain.route.dto.RouteSearchResult;
+import org.example.when2go.domain.route.dto.RouteSearchResponse;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.springframework.beans.factory.ObjectProvider;
@@ -45,7 +45,7 @@ public class TripRecalcProcessor {
                 arrivalTime
         );
         RouteSearchRequest request = new RouteSearchRequest(routeDTO);
-        RouteSearchResult result = googleRouteClient.search(request);
+        RouteSearchResponse result = googleRouteClient.search(request);
         tripRecalcFinalizer.finalizeRecalc(tripId, result);
     }
 }

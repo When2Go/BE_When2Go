@@ -3,7 +3,7 @@ package org.example.when2go.domain.route.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.route.dto.RouteDTO;
-import org.example.when2go.domain.route.dto.RouteSearchResult;
+import org.example.when2go.domain.route.dto.RouteSearchResponse;
 import org.example.when2go.domain.route.service.RouteService;
 import org.example.when2go.global.response.ApiResponse;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +19,7 @@ public class RouteController {
     private final RouteService routeService;
 
     @PostMapping("/search")
-    public ApiResponse<RouteSearchResult> search(@Valid @RequestBody RouteDTO routeDTO) {
+    public ApiResponse<RouteSearchResponse> search(@Valid @RequestBody RouteDTO routeDTO) {
         return ApiResponse.success(routeService.search(routeDTO));
     }
 }
