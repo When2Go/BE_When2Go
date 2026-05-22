@@ -14,7 +14,6 @@ public class RouteSearchRequest {
     private static final boolean COMPUTE_ALTERNATIVE_ROUTES = true;
     private static final String LANGUAGE_CODE = "ko-KR";
     private static final String UNITS = "METRIC";
-    private static final DateTimeFormatter INPUT_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     private Waypoint origin;
@@ -37,8 +36,8 @@ public class RouteSearchRequest {
         this.arrivalTime = toUtcRfc3339(routeDTO.getArrivalTime());
     }
 
-    private static String toUtcRfc3339(String kstDateTime) {
-        return LocalDateTime.parse(kstDateTime, INPUT_FORMAT)
+    private static String toUtcRfc3339(LocalDateTime kstDateTime) {
+        return kstDateTime
                 .atZone(KST)
                 .withZoneSameInstant(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ISO_INSTANT);

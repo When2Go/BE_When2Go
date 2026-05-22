@@ -5,6 +5,7 @@ import org.example.when2go.domain.route.dto.RouteDTO;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
 import org.example.when2go.domain.route.dto.RouteSearchResult;
 import io.github.cdimascio.dotenv.Dotenv;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -27,7 +28,7 @@ class GoogleRouteClientImplTest {
                 126.9780,
                 37.4979,
                 127.0276,
-                "2026-05-16 10:00"
+                LocalDateTime.of(2026, 5, 16, 10, 0)
         );
         RouteSearchRequest request = new RouteSearchRequest(routeDTO);
 

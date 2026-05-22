@@ -1,7 +1,8 @@
 package org.example.when2go.domain.trip.service.recalc;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.route.client.RouteClient;
 import org.example.when2go.domain.route.dto.RouteDTO;
@@ -32,10 +33,10 @@ public class TripRecalcProcessor {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found: " + tripId));
 
-        String arrivalTime = trip.getArrivalTime()
+        LocalDateTime arrivalTime = trip.getArrivalTime()
                 .atZone(ZoneOffset.UTC)
-                .withZoneSameInstant(java.time.ZoneId.of("Asia/Seoul"))
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                .withZoneSameInstant(ZoneId.of("Asia/Seoul"))
+                .toLocalDateTime();
         RouteDTO routeDTO = new RouteDTO(
                 trip.getOriginLat(),
                 trip.getOriginLng(),
