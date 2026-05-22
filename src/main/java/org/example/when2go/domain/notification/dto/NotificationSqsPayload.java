@@ -1,15 +1,14 @@
 package org.example.when2go.domain.notification.dto;
 
-import org.example.when2go.domain.notification.enums.NotificationType;
-
 public record NotificationSqsPayload(
-        Long outboxId,
-        Long scheduleId,
-        Long tripId,
-        Long userId,
-        NotificationType type,
+        String outboxId,
+        String fcmToken,
         String title,
         String body,
-        String dedupKey
+        NotificationData data
 ) {
+    public record NotificationData(
+            String tripId,
+            String type
+    ) {}
 }
