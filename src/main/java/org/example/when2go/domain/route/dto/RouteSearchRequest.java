@@ -1,19 +1,26 @@
 package org.example.when2go.domain.route.dto;
 
-import java.time.LocalDateTime;
-import java.util.Objects;
-import org.example.when2go.domain.route.enums.RouteOption;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@Builder
 public record RouteSearchRequest(
-        double originLat,
-        double originLng,
-        double destLat,
-        double destLng,
-        LocalDateTime arrivalTime,
-        RouteOption routeOption
+        Waypoint origin,
+        Waypoint destination,
+        String travelMode,
+        String routingPreference,
+        boolean computeAlternativeRoutes,
+        RouteModifiers routeModifiers,
+        String languageCode,
+        String units,
+        String arrivalTime
 ) {
-    public RouteSearchRequest {
-        Objects.requireNonNull(arrivalTime, "arrivalTime must not be null");
-        Objects.requireNonNull(routeOption, "routeOption must not be null");
+    public record Waypoint(Location location) {
+        public record Location(LatLng latLng) {
+            public record LatLng(double latitude, double longitude) {}
+        }
     }
+
+    public record RouteModifiers(boolean avoidTolls, boolean avoidHighways, boolean avoidFerries) {}
 }
