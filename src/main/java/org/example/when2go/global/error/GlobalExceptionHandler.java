@@ -6,9 +6,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
@@ -33,6 +35,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(GlobalErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
                 .body(ApiResponse.error(GlobalErrorCode.INVALID_INPUT_VALUE));
+    }
+
+    // 메서드 파라미터 검증 예외 처리 (@Validated 컨트롤러의 @RequestHeader/@PathVariable 등)
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
+        log.warn("Method parameter validation failed: {}", e.getMessage());
+        return ResponseEntity
+                .status(GlobalErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
+                .body(ApiResponse.error(GlobalErrorCode.INVALID_INPUT_VALUE));
+    }
+
+    // 필수 요청 헤더 누락 예외 처리
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ApiResponse<Void>> handleMissingRequestHeaderException(MissingRequestHeaderException e) {
+        log.warn("Missing request header: {}", e.getMessage());
+        return ResponseEntity
+                .status(GlobalErrorCode.MISSING_REQUEST_PARAMETER.getHttpStatus())
+                .body(ApiResponse.error(GlobalErrorCode.MISSING_REQUEST_PARAMETER));
     }
 
     // 타입 불일치 예외 처리

@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface AppUserRepository extends JpaRepository <AppUser, Long> {
     Optional<AppUser> findByDeviceId(String deviceId);
-};
 
+    boolean existsByDeviceId(String deviceId);
+}

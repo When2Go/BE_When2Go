@@ -1,17 +1,22 @@
 package org.example.when2go.domain.user.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
+import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
+import org.example.when2go.domain.user.dto.UserStatusResponse;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
 import org.example.when2go.domain.user.dto.UserResponse;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.domain.user.entity.Platform;
+import org.example.when2go.domain.user.error.UserErrorCode;
 import org.example.when2go.domain.user.repository.AppUserRepository;
+import org.example.when2go.global.error.DomainException;
 import org.junit.jupiter.api.Test;
 
 class UserServiceTest {
@@ -43,5 +48,64 @@ class UserServiceTest {
 
         assertThat(result.deviceId()).isEqualTo("device-abc");
         verify(appUserRepository, never()).save(any());
+    }
+
+    @Test
+    void updateFcmTokenChangesTokenWhenUserExists() {
+        AppUser existing = AppUser.builder()
+                .deviceId("device-abc")
+                .platform(Platform.IOS)
+                .fcmToken("old-token")
+                .build();
+        when(appUserRepository.findByDeviceId("device-abc")).thenReturn(Optional.of(existing));
+
+        FcmTokenUpdateResponse result = userService.updateFcmToken("device-abc", "new-token");
+
+        assertThat(result.deviceId()).isEqualTo("device-abc");
+        assertThat(result.fcmToken()).isEqualTo("new-token");
+        assertThat(existing.getFcmToken()).isEqualTo("new-token");
+    }
+
+    @Test
+    void updateFcmTokenThrowsWhenUserNotFound() {
+        when(appUserRepository.findByDeviceId("device-missing")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> userService.updateFcmToken("device-missing", "new-token"))
+                .isInstanceOf(DomainException.class)
+                .extracting(e -> ((DomainException) e).getErrorCode())
+                .isEqualTo(UserErrorCode.USER_NOT_FOUND);
+    }
+
+    @Test
+    void existsByDeviceIdReturnsTrueWhenUserExists() {
+        when(appUserRepository.existsByDeviceId("device-abc")).thenReturn(true);
+
+        UserStatusResponse result = userService.existsByDeviceId("device-abc");
+
+        assertThat(result.exists()).isTrue();
+    }
+
+    @Test
+    void existsByDeviceIdReturnsFalseWhenUserNotExists() {
+        when(appUserRepository.existsByDeviceId("device-missing")).thenReturn(false);
+
+        UserStatusResponse result = userService.existsByDeviceId("device-missing");
+
+        assertThat(result.exists()).isFalse();
+    }
+
+    @Test
+    void updateFcmTokenIsIdempotentForSameToken() {
+        AppUser existing = AppUser.builder()
+                .deviceId("device-abc")
+                .platform(Platform.IOS)
+                .fcmToken("same-token")
+                .build();
+        when(appUserRepository.findByDeviceId("device-abc")).thenReturn(Optional.of(existing));
+
+        FcmTokenUpdateResponse result = userService.updateFcmToken("device-abc", "same-token");
+
+        assertThat(result.fcmToken()).isEqualTo("same-token");
+        assertThat(existing.getFcmToken()).isEqualTo("same-token");
     }
 }
