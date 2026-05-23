@@ -1,4 +1,4 @@
-package org.example.when2go.domain.user.enums;
+package org.example.when2go.domain.user.entity;
 
 public enum NotificationMode {
     SOUND,

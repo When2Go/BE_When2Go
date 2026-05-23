@@ -10,7 +10,7 @@ import java.util.Optional;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
 import org.example.when2go.domain.user.dto.UserResponse;
 import org.example.when2go.domain.user.entity.AppUser;
-import org.example.when2go.domain.user.enums.Platform;
+import org.example.when2go.domain.user.entity.Platform;
 import org.example.when2go.domain.user.repository.AppUserRepository;
 import org.junit.jupiter.api.Test;
 

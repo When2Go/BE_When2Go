@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import org.example.when2go.domain.notification.entity.NotificationScheduleOutbox;
-import org.example.when2go.domain.notification.enums.NotificationOutboxStatus;
+import org.example.when2go.domain.notification.entity.NotificationOutboxStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

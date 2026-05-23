@@ -20,8 +20,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.when2go.domain.notification.enums.NotificationOutboxStatus;
-import org.example.when2go.domain.notification.enums.NotificationType;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.global.common.entity.BaseEntity;

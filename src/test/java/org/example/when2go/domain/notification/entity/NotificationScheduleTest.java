@@ -3,13 +3,11 @@ package org.example.when2go.domain.notification.entity;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDateTime;
-import org.example.when2go.domain.notification.enums.NotificationOutboxStatus;
-import org.example.when2go.domain.notification.enums.NotificationScheduleStatus;
-import org.example.when2go.domain.notification.enums.NotificationType;
+
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.user.entity.AppUser;
-import org.example.when2go.domain.user.enums.Platform;
+import org.example.when2go.domain.user.entity.Platform;
 import org.junit.jupiter.api.Test;
 
 class NotificationScheduleTest {

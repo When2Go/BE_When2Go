@@ -20,8 +20,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.example.when2go.domain.reservation.entity.Reservation;
 import org.example.when2go.domain.route.enums.RouteOption;
-import org.example.when2go.domain.trip.enums.TripRecalcPhase;
-import org.example.when2go.domain.trip.enums.TripStatus;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.global.common.entity.BaseEntity;
 

@@ -5,10 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import java.time.LocalDateTime;
 import org.example.when2go.domain.route.enums.RouteOption;
-import org.example.when2go.domain.trip.enums.TripRecalcPhase;
-import org.example.when2go.domain.trip.enums.TripStatus;
 import org.example.when2go.domain.user.entity.AppUser;
-import org.example.when2go.domain.user.enums.Platform;
+import org.example.when2go.domain.user.entity.Platform;
 import org.junit.jupiter.api.Test;
 
 class TripTest {

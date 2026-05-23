@@ -2,7 +2,7 @@ package org.example.when2go.domain.notification.service;
 
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.example.when2go.domain.notification.enums.NotificationOutboxStatus;
+import org.example.when2go.domain.notification.entity.NotificationOutboxStatus;
 import org.example.when2go.domain.notification.repository.NotificationScheduleOutboxRepository;
 import org.example.when2go.domain.notification.repository.NotificationScheduleRepository;
 import org.springframework.stereotype.Service;

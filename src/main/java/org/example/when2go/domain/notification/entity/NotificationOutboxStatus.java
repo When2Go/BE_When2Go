@@ -1,4 +1,4 @@
-package org.example.when2go.domain.notification.enums;
+package org.example.when2go.domain.notification.entity;
 
 public enum NotificationOutboxStatus {
     PENDING,

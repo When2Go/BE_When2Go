@@ -1,8 +1,8 @@
-package org.example.when2go.domain.trip.service.recalc;
+package org.example.when2go.domain.trip.service.recalc.policy;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
-import org.example.when2go.domain.trip.enums.TripRecalcPhase;
+import org.example.when2go.domain.trip.entity.TripRecalcPhase;
 import org.springframework.stereotype.Component;
 
 @Component

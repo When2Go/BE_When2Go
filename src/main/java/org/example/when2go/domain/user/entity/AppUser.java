@@ -12,8 +12,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.example.when2go.domain.user.enums.NotificationMode;
-import org.example.when2go.domain.user.enums.Platform;
 import org.example.when2go.global.common.entity.BaseEntity;
 
 @Getter

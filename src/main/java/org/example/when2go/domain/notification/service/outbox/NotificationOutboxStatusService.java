@@ -3,7 +3,7 @@ package org.example.when2go.domain.notification.service.outbox;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
-import org.example.when2go.domain.notification.enums.NotificationOutboxStatus;
+import org.example.when2go.domain.notification.entity.NotificationOutboxStatus;
 import org.example.when2go.domain.notification.repository.NotificationScheduleOutboxRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
