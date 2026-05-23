@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.user.controller.docs.UserControllerApi;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateRequest;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
-import org.example.when2go.domain.user.dto.UserExistsResponse;
+import org.example.when2go.domain.user.dto.UserStatusResponse;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
 import org.example.when2go.domain.user.dto.UserResponse;
 import org.example.when2go.domain.user.service.UserService;
@@ -32,7 +32,7 @@ public class UserController implements UserControllerApi {
 
     @Override
     @GetMapping("/status")
-    public ApiResponse<UserExistsResponse> exists(
+    public ApiResponse<UserStatusResponse> exists(
             @RequestHeader("X-Device-Id")
             @NotBlank
             @Size(min = 36, max = 36)

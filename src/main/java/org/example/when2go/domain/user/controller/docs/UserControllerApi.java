@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateRequest;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
-import org.example.when2go.domain.user.dto.UserExistsResponse;
+import org.example.when2go.domain.user.dto.UserStatusResponse;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
 import org.example.when2go.domain.user.dto.UserResponse;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -99,7 +99,7 @@ public interface UserControllerApi {
                     )
             )
     })
-    org.example.when2go.global.response.ApiResponse<UserExistsResponse> exists(
+    org.example.when2go.global.response.ApiResponse<UserStatusResponse> exists(
             @Parameter(
                     name = "X-Device-Id",
                     description = "회원 식별용 디바이스 ID (UUID 36자)",

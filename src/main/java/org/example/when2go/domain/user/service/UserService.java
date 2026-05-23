@@ -2,7 +2,7 @@ package org.example.when2go.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
-import org.example.when2go.domain.user.dto.UserExistsResponse;
+import org.example.when2go.domain.user.dto.UserStatusResponse;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
 import org.example.when2go.domain.user.dto.UserResponse;
 import org.example.when2go.domain.user.entity.AppUser;
@@ -38,8 +38,8 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserExistsResponse existsByDeviceId(String deviceId) {
-        return UserExistsResponse.of(appUserRepository.existsByDeviceId(deviceId));
+    public UserStatusResponse existsByDeviceId(String deviceId) {
+        return UserStatusResponse.of(appUserRepository.existsByDeviceId(deviceId));
     }
 
 }
