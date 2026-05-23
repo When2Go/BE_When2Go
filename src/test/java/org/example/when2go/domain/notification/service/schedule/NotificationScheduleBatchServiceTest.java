@@ -184,7 +184,7 @@ class NotificationScheduleBatchServiceTest {
                 .destLat(37.2)
                 .destLng(127.2)
                 .arrivalTime(LocalDateTime.of(2026, 5, 7, 10, 0))
-                .routeOption(RouteOption.OPTIMAL)
+                .routeOption(RouteOption.DRIVE)
                 .bufferMinutes(10)
                 .finalDepartureTime(LocalDateTime.of(2026, 5, 7, 9, 0))
                 .build();
