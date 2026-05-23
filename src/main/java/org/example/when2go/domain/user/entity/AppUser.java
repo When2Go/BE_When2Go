@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -63,6 +64,14 @@ public class AppUser extends BaseEntity {
                 ? NotificationMode.SOUND_AND_VIBRATE
                 : notificationMode;
         this.widgetEnabled = widgetEnabled == null || widgetEnabled;
+    }
+
+    public void updateFcmToken(String newToken) {
+        // Object로 검증하는 이유 : NPE까지 잡기 위해서
+        if (Objects.equals(this.fcmToken, newToken)) {
+            return;
+        }
+        this.fcmToken = newToken;
     }
 
 }
