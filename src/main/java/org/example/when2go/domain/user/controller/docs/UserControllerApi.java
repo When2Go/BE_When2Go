@@ -2,6 +2,7 @@ package org.example.when2go.domain.user.controller.docs;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -54,18 +55,26 @@ public interface UserControllerApi {
 
     @Operation(
             summary = "FCM 토큰 갱신",
-            description = "지정한 deviceId의 회원에 대해 FCM 토큰을 새 값으로 갱신한다. "
+            description = "요청 헤더 `X-Device-Id`에 담긴 deviceId의 회원에 대해 FCM 토큰을 새 값으로 갱신한다. "
                     + "동일한 토큰을 다시 전송해도 200 OK가 반환되며 응답 본문도 동일하다 (멱등)."
     )
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "토큰 갱신 성공"),
             @ApiResponse(
                     responseCode = "400",
-                    description = "유효하지 않은 요청 (fcmToken 누락 또는 512자 초과)",
+                    description = "유효하지 않은 요청 (X-Device-Id 누락/형식 오류, fcmToken 누락 또는 512자 초과)",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
                             examples = {
+                                    @ExampleObject(
+                                            name = "X-Device-Id 헤더 누락",
+                                            value = "{\"success\": false, \"code\": \"GLOBAL_003\", \"message\": \"필수 파라미터가 누락되었습니다.\"}"
+                                    ),
+                                    @ExampleObject(
+                                            name = "X-Device-Id 형식 오류",
+                                            value = "{\"success\": false, \"code\": \"GLOBAL_001\", \"message\": \"잘못된 입력값입니다.\"}"
+                                    ),
                                     @ExampleObject(
                                             name = "fcmToken 누락",
                                             value = "{\"success\": false, \"code\": \"GLOBAL_001\", \"message\": \"잘못된 입력값입니다.\"}"
@@ -91,7 +100,12 @@ public interface UserControllerApi {
             )
     })
     org.example.when2go.global.response.ApiResponse<FcmTokenUpdateResponse> updateFcmToken(
-            @Parameter(description = "회원 식별용 디바이스 ID (UUID 36자)", required = true)
+            @Parameter(
+                    name = "X-Device-Id",
+                    description = "회원 식별용 디바이스 ID (UUID 36자)",
+                    in = ParameterIn.HEADER,
+                    required = true
+            )
             String deviceId,
             @Valid @RequestBody FcmTokenUpdateRequest request
     );
