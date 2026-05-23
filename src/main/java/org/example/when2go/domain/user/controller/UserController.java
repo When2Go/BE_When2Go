@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.user.controller.docs.UserControllerApi;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateRequest;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
+import org.example.when2go.domain.user.dto.UserExistsResponse;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
 import org.example.when2go.domain.user.dto.UserResponse;
 import org.example.when2go.domain.user.service.UserService;
@@ -27,6 +28,16 @@ public class UserController implements UserControllerApi {
     public ApiResponse<UserResponse> register(
             @Valid @RequestBody UserRegisterRequest request) {
         return ApiResponse.success(userService.registerOrFind(request));
+    }
+
+    @Override
+    @GetMapping("/status")
+    public ApiResponse<UserExistsResponse> exists(
+            @RequestHeader("X-Device-Id")
+            @NotBlank
+            @Size(min = 36, max = 36)
+            String deviceId) {
+        return ApiResponse.success(userService.existsByDeviceId(deviceId));
     }
 
     @Override

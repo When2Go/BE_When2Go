@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Optional;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
+import org.example.when2go.domain.user.dto.UserExistsResponse;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
 import org.example.when2go.domain.user.dto.UserResponse;
 import org.example.when2go.domain.user.entity.AppUser;
@@ -73,6 +74,24 @@ class UserServiceTest {
                 .isInstanceOf(DomainException.class)
                 .extracting(e -> ((DomainException) e).getErrorCode())
                 .isEqualTo(UserErrorCode.USER_NOT_FOUND);
+    }
+
+    @Test
+    void existsByDeviceIdReturnsTrueWhenUserExists() {
+        when(appUserRepository.existsByDeviceId("device-abc")).thenReturn(true);
+
+        UserExistsResponse result = userService.existsByDeviceId("device-abc");
+
+        assertThat(result.exists()).isTrue();
+    }
+
+    @Test
+    void existsByDeviceIdReturnsFalseWhenUserNotExists() {
+        when(appUserRepository.existsByDeviceId("device-missing")).thenReturn(false);
+
+        UserExistsResponse result = userService.existsByDeviceId("device-missing");
+
+        assertThat(result.exists()).isFalse();
     }
 
     @Test
