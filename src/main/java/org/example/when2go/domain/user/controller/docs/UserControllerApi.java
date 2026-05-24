@@ -10,12 +10,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateRequest;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
 import org.example.when2go.domain.user.dto.UserStatusResponse;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
 import org.example.when2go.domain.user.dto.UserResponse;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "회원", description = "회원 API")
 public interface UserControllerApi {
@@ -51,7 +52,7 @@ public interface UserControllerApi {
             )
     })
     org.example.when2go.global.response.ApiResponse<UserResponse> register(
-            @Valid @RequestBody UserRegisterRequest request
+            @Valid UserRegisterRequest request
     );
 
     @Operation(
@@ -106,6 +107,8 @@ public interface UserControllerApi {
                     in = ParameterIn.HEADER,
                     required = true
             )
+            @NotBlank
+            @Size(min = 36, max = 36)
             String deviceId
     );
 
@@ -175,7 +178,9 @@ public interface UserControllerApi {
                     in = ParameterIn.HEADER,
                     required = true
             )
+            @NotBlank
+            @Size(min = 36, max = 36)
             String deviceId,
-            @Valid @RequestBody FcmTokenUpdateRequest request
+            @Valid FcmTokenUpdateRequest request
     );
 }
