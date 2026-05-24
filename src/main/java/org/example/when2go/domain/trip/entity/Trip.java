@@ -82,7 +82,7 @@ public class Trip extends BaseEntity {
     @Column(name = "recalc_phase", nullable = false, length = 30)
     private TripRecalcPhase recalcPhase = TripRecalcPhase.INITIAL;
 
-    @Column(name = "next_recalc_at")
+    @Column(name = "next_recalc_at", nullable = false)
     private LocalDateTime nextRecalcAt;
 
     @Enumerated(EnumType.STRING)
