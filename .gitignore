@@ -38,3 +38,5 @@ out/
 
 ### YAML ###
 src/main/resources/application-dev.yml
+
+docs/features/
