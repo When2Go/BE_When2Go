@@ -1,9 +1,9 @@
 package org.example.when2go.domain.route;
 
 import org.example.when2go.domain.route.client.GoogleRouteClientImpl;
-import org.example.when2go.domain.route.dto.RouteDTO;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
-import org.example.when2go.domain.route.dto.RouteSearchResponse;
+import org.example.when2go.domain.route.dto.GoogleRouteSearchRequest;
+import org.example.when2go.domain.route.dto.GoogleRouteSearchResponse;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
@@ -23,16 +23,16 @@ class GoogleRouteClientImplTest {
 
         GoogleRouteClientImpl client = new GoogleRouteClientImpl(webClient);
 
-        RouteDTO routeDTO = new RouteDTO(
+        RouteSearchRequest routeSearchRequest = new RouteSearchRequest(
                 37.5665,
                 126.9780,
                 37.4979,
                 127.0276,
                 LocalDateTime.of(2026, 5, 16, 10, 0)
         );
-        RouteSearchRequest request = new RouteSearchRequest(routeDTO);
+        GoogleRouteSearchRequest request = new GoogleRouteSearchRequest(routeSearchRequest);
 
-        RouteSearchResponse result = client.search(request);
+        GoogleRouteSearchResponse result = client.search(request);
         System.out.println("result: " + result);
         System.out.println("totalMinutes: " + result.totalMinutes());
     }

@@ -1,55 +1,30 @@
 package org.example.when2go.domain.route.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
+@Setter
 public class RouteSearchRequest {
-    private static final String TRAVEL_MODE = "TRANSIT";
-    private static final boolean COMPUTE_ALTERNATIVE_ROUTES = true;
-    private static final String LANGUAGE_CODE = "ko-KR";
-    private static final String UNITS = "METRIC";
-    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
-    private Waypoint origin;
-    private Waypoint destination;
-    private String travelMode;
-    private String routingPreference;
-    private boolean computeAlternativeRoutes;
-    private String languageCode;
-    private String units;
-    private String arrivalTime;
-
-    public RouteSearchRequest(RouteDTO routeDTO) {
-        this.origin = toWaypoint(routeDTO.getOriginLat(), routeDTO.getOriginLng());
-        this.destination = toWaypoint(routeDTO.getDestLat(), routeDTO.getDestLng());
-        this.travelMode = TRAVEL_MODE;
-        this.routingPreference = null;
-        this.computeAlternativeRoutes = COMPUTE_ALTERNATIVE_ROUTES;
-        this.languageCode = LANGUAGE_CODE;
-        this.units = UNITS;
-        this.arrivalTime = toUtcRfc3339(routeDTO.getArrivalTime());
-    }
-
-    private static String toUtcRfc3339(LocalDateTime kstDateTime) {
-        return kstDateTime
-                .atZone(KST)
-                .withZoneSameInstant(ZoneOffset.UTC)
-                .format(DateTimeFormatter.ISO_INSTANT);
-    }
-
-    private static Waypoint toWaypoint(double latitude, double longitude) {
-        return new Waypoint(new Waypoint.Location(new Waypoint.Location.LatLng(latitude, longitude)));
-    }
-
-    public record Waypoint(Location location) {
-        public record Location(LatLng latLng) {
-            public record LatLng(double latitude, double longitude) {}
-        }
-    }
+    @NotNull
+    Double originLat;
+    @NotNull
+    Double originLng;
+    @NotNull
+    Double destLat;
+    @NotNull
+    Double destLng;
+    @Schema(example = "2026-05-22 13:30")
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    LocalDateTime arrivalTime;
 }

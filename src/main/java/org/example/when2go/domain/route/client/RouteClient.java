@@ -1,9 +1,9 @@
 package org.example.when2go.domain.route.client;
 
-import org.example.when2go.domain.route.dto.RouteSearchRequest;
-import org.example.when2go.domain.route.dto.RouteSearchResponse;
+import org.example.when2go.domain.route.dto.GoogleRouteSearchRequest;
+import org.example.when2go.domain.route.dto.GoogleRouteSearchResponse;
 
 public interface RouteClient {
 
-    RouteSearchResponse search(RouteSearchRequest request);
+    GoogleRouteSearchResponse search(GoogleRouteSearchRequest request);
 }

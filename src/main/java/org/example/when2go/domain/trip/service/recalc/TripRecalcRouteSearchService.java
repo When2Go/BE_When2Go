@@ -5,9 +5,9 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.route.client.RouteClient;
-import org.example.when2go.domain.route.dto.RouteDTO;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
-import org.example.when2go.domain.route.dto.RouteSearchResponse;
+import org.example.when2go.domain.route.dto.GoogleRouteSearchRequest;
+import org.example.when2go.domain.route.dto.GoogleRouteSearchResponse;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.springframework.beans.factory.ObjectProvider;
@@ -37,15 +37,15 @@ public class TripRecalcRouteSearchService {
                 .atZone(ZoneOffset.UTC)
                 .withZoneSameInstant(ZoneId.of("Asia/Seoul"))
                 .toLocalDateTime();
-        RouteDTO routeDTO = new RouteDTO(
+        RouteSearchRequest routeSearchRequest = new RouteSearchRequest(
                 trip.getOriginLat(),
                 trip.getOriginLng(),
                 trip.getDestLat(),
                 trip.getDestLng(),
                 arrivalTime
         );
-        RouteSearchRequest request = new RouteSearchRequest(routeDTO);
-        RouteSearchResponse result = googleRouteClient.search(request);
+        GoogleRouteSearchRequest request = new GoogleRouteSearchRequest(routeSearchRequest);
+        GoogleRouteSearchResponse result = googleRouteClient.search(request);
         tripPhaseAdvanceService.advancePhase(tripId, result);
     }
 }
