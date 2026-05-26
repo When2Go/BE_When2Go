@@ -1,6 +1,5 @@
 package org.example.when2go.domain.trip.service;
 
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.route.enums.RouteOption;
@@ -13,6 +12,7 @@ import org.example.when2go.domain.user.error.UserErrorCode;
 import org.example.when2go.domain.user.repository.AppUserRepository;
 import org.example.when2go.global.error.DomainException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +20,8 @@ public class TripCreateService {
 
     private final TripRepository tripRepository;
     private final AppUserRepository appUserRepository;
+
+    private static final long INITIAL_RECALC_LEAD_MINUTES = 60;
 
     @Transactional
     public TripCreateResponse create(String deviceId, TripCreateRequest request) {
@@ -31,7 +33,7 @@ public class TripCreateService {
                 .minusSeconds(request.durationSeconds())
                 .minusMinutes(request.bufferMinutes());
 
-        LocalDateTime nextRecalcAt = estimatedDepartureTime.minusMinutes(60);
+        LocalDateTime nextRecalcAt = estimatedDepartureTime.minusMinutes(INITIAL_RECALC_LEAD_MINUTES);
         if (nextRecalcAt.isBefore(LocalDateTime.now())) {
             nextRecalcAt = LocalDateTime.now();
         }
