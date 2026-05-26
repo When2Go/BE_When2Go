@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.trip.controller.docs.TripControllerApi;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
-import org.example.when2go.domain.trip.service.TripCreateService;
+import org.example.when2go.domain.trip.service.TripService;
 import org.example.when2go.global.response.ApiResponse;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class TripController implements TripControllerApi {
 
-    private final TripCreateService tripCreateService;
+    private final TripService tripService;
 
     @Override
     @PostMapping
@@ -29,6 +29,6 @@ public class TripController implements TripControllerApi {
             String deviceId,
             @Valid @RequestBody TripCreateRequest request
     ) {
-        return ApiResponse.success(tripCreateService.create(deviceId, request));
+        return ApiResponse.success(tripService.create(deviceId, request));
     }
 }

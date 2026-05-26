@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class TripCreateService {
+public class TripService {
 
     private final TripRepository tripRepository;
     private final AppUserRepository appUserRepository;
