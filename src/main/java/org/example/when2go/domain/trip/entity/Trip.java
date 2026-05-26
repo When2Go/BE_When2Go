@@ -149,10 +149,6 @@ public class Trip extends BaseEntity {
         this.nextRecalcAt = Objects.requireNonNull(nextRecalcAt, "nextRecalcAt must not be null");
     }
 
-    public void holdRecalcUntil(LocalDateTime nextRecalcAt) {
-        this.nextRecalcAt = Objects.requireNonNull(nextRecalcAt, "nextRecalcAt must not be null");
-    }
-
     public void markFinalized(LocalDateTime finalDepartureTime) {
         this.finalDepartureTime = Objects.requireNonNull(
                 finalDepartureTime,
