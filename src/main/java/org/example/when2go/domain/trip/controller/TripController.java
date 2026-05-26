@@ -1,9 +1,7 @@
 package org.example.when2go.domain.trip.controller;
 
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.example.when2go.domain.trip.controller.docs.TripControllerApi;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
 import org.example.when2go.domain.trip.service.TripCreateService;
@@ -15,17 +13,15 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/trips")
 @RequiredArgsConstructor
-public class TripController {
+public class TripController implements TripControllerApi {
 
     private final TripCreateService tripCreateService;
 
+    @Override
     @PostMapping
     public ApiResponse<TripCreateResponse> create(
-            @RequestHeader("X-Device-Id")
-            @NotBlank
-            @Size(min = 36, max = 36)
-            String deviceId,
-            @Valid @RequestBody TripCreateRequest request
+            @RequestHeader("X-Device-Id") String deviceId,
+            @RequestBody TripCreateRequest request
     ) {
         return ApiResponse.success(tripCreateService.create(deviceId, request));
     }
