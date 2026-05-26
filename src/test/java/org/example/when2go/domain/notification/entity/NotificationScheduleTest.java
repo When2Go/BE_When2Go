@@ -78,6 +78,7 @@ class NotificationScheduleTest {
                 .routeOption(RouteOption.TRANSIT)
                 .bufferMinutes(10)
                 .finalDepartureTime(LocalDateTime.of(2026, 5, 7, 9, 0))
+                .nextRecalcAt(LocalDateTime.of(2026, 5, 7, 8, 0))
                 .build();
     }
 }

@@ -82,7 +82,7 @@ public class Trip extends BaseEntity {
     @Column(name = "recalc_phase", nullable = false, length = 30)
     private TripRecalcPhase recalcPhase = TripRecalcPhase.INITIAL;
 
-    @Column(name = "next_recalc_at", nullable = false)
+    @Column(name = "next_recalc_at")
     private LocalDateTime nextRecalcAt;
 
     @Enumerated(EnumType.STRING)
@@ -136,7 +136,7 @@ public class Trip extends BaseEntity {
         this.bufferMinutes = Objects.requireNonNull(bufferMinutes, "bufferMinutes must not be null");
         this.finalDepartureTime = finalDepartureTime;
         this.recalcPhase = recalcPhase == null ? TripRecalcPhase.INITIAL : recalcPhase;
-        this.nextRecalcAt = nextRecalcAt;
+        this.nextRecalcAt = Objects.requireNonNull(nextRecalcAt, "nextRecalcAt must not be null");
         this.status = status == null ? TripStatus.PENDING : status;
         this.actualDepartedAt = actualDepartedAt;
         this.actualArrivedAt = actualArrivedAt;

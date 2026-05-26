@@ -19,6 +19,7 @@ class TripTest {
                 .platform(Platform.IOS)
                 .build();
         LocalDateTime arrivalTime = LocalDateTime.of(2026, 5, 7, 9, 0);
+        LocalDateTime nextRecalcAt = LocalDateTime.of(2026, 5, 7, 8, 0);
 
         Trip trip = Trip.builder()
                 .user(user)
@@ -31,6 +32,7 @@ class TripTest {
                 .arrivalTime(arrivalTime)
                 .routeOption(RouteOption.TRANSIT)
                 .bufferMinutes(10)
+                .nextRecalcAt(nextRecalcAt)
                 .build();
 
         assertThat(trip.getUser()).isEqualTo(user);
@@ -38,7 +40,7 @@ class TripTest {
         assertThat(trip.getRouteOption()).isEqualTo(RouteOption.TRANSIT);
         assertThat(trip.getStatus()).isEqualTo(TripStatus.PENDING);
         assertThat(trip.getRecalcPhase()).isEqualTo(TripRecalcPhase.INITIAL);
-        assertThat(trip.getNextRecalcAt()).isNull();
+        assertThat(trip.getNextRecalcAt()).isEqualTo(nextRecalcAt);
     }
 
     // 필수값이 null이면 이동 엔티티 생성 시점에 NPE가 발생하는지 확인한다.
@@ -112,6 +114,7 @@ class TripTest {
                 .arrivalTime(LocalDateTime.of(2026, 5, 7, 9, 0))
                 .routeOption(RouteOption.TRANSIT)
                 .bufferMinutes(10)
+                .nextRecalcAt(LocalDateTime.of(2026, 5, 7, 8, 0))
                 .build();
     }
 }
