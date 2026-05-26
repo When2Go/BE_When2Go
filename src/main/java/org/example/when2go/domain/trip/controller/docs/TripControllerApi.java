@@ -10,8 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
 
@@ -93,8 +91,6 @@ public interface TripControllerApi {
                     in = ParameterIn.HEADER,
                     required = true
             )
-            @NotBlank
-            @Size(min = 36, max = 36)
             String deviceId,
             @Valid TripCreateRequest request
     );

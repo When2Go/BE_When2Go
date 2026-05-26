@@ -1,5 +1,8 @@
 package org.example.when2go.domain.trip.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.trip.controller.docs.TripControllerApi;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
@@ -20,8 +23,11 @@ public class TripController implements TripControllerApi {
     @Override
     @PostMapping
     public ApiResponse<TripCreateResponse> create(
-            @RequestHeader("X-Device-Id") String deviceId,
-            @RequestBody TripCreateRequest request
+            @RequestHeader("X-Device-Id")
+            @NotBlank
+            @Size(min = 36, max = 36)
+            String deviceId,
+            @Valid @RequestBody TripCreateRequest request
     ) {
         return ApiResponse.success(tripCreateService.create(deviceId, request));
     }

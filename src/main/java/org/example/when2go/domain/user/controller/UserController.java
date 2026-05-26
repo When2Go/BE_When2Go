@@ -1,5 +1,8 @@
 package org.example.when2go.domain.user.controller;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.user.controller.docs.UserControllerApi;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateRequest;
@@ -23,7 +26,7 @@ public class UserController implements UserControllerApi {
     @Override
     @PostMapping
     public ApiResponse<UserResponse> register(
-            @RequestBody UserRegisterRequest request) {
+            @Valid @RequestBody UserRegisterRequest request) {
         return ApiResponse.success(userService.registerOrFind(request));
     }
 
@@ -31,6 +34,8 @@ public class UserController implements UserControllerApi {
     @GetMapping("/status")
     public ApiResponse<UserStatusResponse> exists(
             @RequestHeader("X-Device-Id")
+            @NotBlank
+            @Size(min = 36, max = 36)
             String deviceId) {
         return ApiResponse.success(userService.existsByDeviceId(deviceId));
     }
@@ -39,8 +44,10 @@ public class UserController implements UserControllerApi {
     @PatchMapping("/me/fcm-token")
     public ApiResponse<FcmTokenUpdateResponse> updateFcmToken(
             @RequestHeader("X-Device-Id")
+            @NotBlank
+            @Size(min = 36, max = 36)
             String deviceId,
-            @RequestBody FcmTokenUpdateRequest request) {
+            @Valid @RequestBody FcmTokenUpdateRequest request) {
         return ApiResponse.success(userService.updateFcmToken(deviceId, request.fcmToken()));
     }
 }
