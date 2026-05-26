@@ -1,20 +1,20 @@
 package org.example.when2go.domain.route.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.when2go.domain.route.client.RouteClient;
-import org.example.when2go.domain.route.dto.RouteDTO;
+import org.example.when2go.domain.route.client.GoogleRouteClient;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
-import org.example.when2go.domain.route.dto.RouteSearchResponse;
+import org.example.when2go.domain.route.dto.GoogleRouteSearchRequest;
+import org.example.when2go.domain.route.dto.GoogleRouteSearchResponse;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class RouteService {
 
-    private final RouteClient routeClient;
+    private final GoogleRouteClient googleRouteClient;
 
-    public RouteSearchResponse search(RouteDTO routeDTO) {
-        RouteSearchRequest request = new RouteSearchRequest(routeDTO);
-        return routeClient.search(request);
+    public GoogleRouteSearchResponse search(RouteSearchRequest routeSearchRequest) {
+        GoogleRouteSearchRequest request = new GoogleRouteSearchRequest(routeSearchRequest);
+        return googleRouteClient.search(request);
     }
 }

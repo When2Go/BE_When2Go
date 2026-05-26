@@ -136,7 +136,7 @@ public class Trip extends BaseEntity {
         this.bufferMinutes = Objects.requireNonNull(bufferMinutes, "bufferMinutes must not be null");
         this.finalDepartureTime = finalDepartureTime;
         this.recalcPhase = recalcPhase == null ? TripRecalcPhase.INITIAL : recalcPhase;
-        this.nextRecalcAt = nextRecalcAt;
+        this.nextRecalcAt = Objects.requireNonNull(nextRecalcAt, "nextRecalcAt must not be null");
         this.status = status == null ? TripStatus.PENDING : status;
         this.actualDepartedAt = actualDepartedAt;
         this.actualArrivedAt = actualArrivedAt;
@@ -146,10 +146,6 @@ public class Trip extends BaseEntity {
 
     public void applyRecalcResult(TripRecalcPhase recalcPhase, LocalDateTime nextRecalcAt) {
         this.recalcPhase = Objects.requireNonNull(recalcPhase, "recalcPhase must not be null");
-        this.nextRecalcAt = Objects.requireNonNull(nextRecalcAt, "nextRecalcAt must not be null");
-    }
-
-    public void holdRecalcUntil(LocalDateTime nextRecalcAt) {
         this.nextRecalcAt = Objects.requireNonNull(nextRecalcAt, "nextRecalcAt must not be null");
     }
 

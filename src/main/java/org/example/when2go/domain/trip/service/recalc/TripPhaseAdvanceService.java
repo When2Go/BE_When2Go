@@ -4,7 +4,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
-import org.example.when2go.domain.route.dto.RouteSearchResponse;
+import org.example.when2go.domain.route.dto.GoogleRouteSearchResponse;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.entity.TripRecalcPhase;
 import org.example.when2go.domain.trip.repository.TripRepository;
@@ -23,7 +23,7 @@ public class TripPhaseAdvanceService {
     private final Clock clock;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void advancePhase(Long tripId, RouteSearchResponse result) {
+    public void advancePhase(Long tripId, GoogleRouteSearchResponse result) {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found: " + tripId));
         if (trip.getRecalcPhase() == TripRecalcPhase.DONE) {

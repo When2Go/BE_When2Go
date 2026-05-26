@@ -9,13 +9,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateRequest;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
 import org.example.when2go.domain.user.dto.UserStatusResponse;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
 import org.example.when2go.domain.user.dto.UserResponse;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @Tag(name = "회원", description = "회원 API")
 public interface UserControllerApi {
@@ -51,7 +49,7 @@ public interface UserControllerApi {
             )
     })
     org.example.when2go.global.response.ApiResponse<UserResponse> register(
-            @Valid @RequestBody UserRegisterRequest request
+            UserRegisterRequest request
     );
 
     @Operation(
@@ -176,6 +174,6 @@ public interface UserControllerApi {
                     required = true
             )
             String deviceId,
-            @Valid @RequestBody FcmTokenUpdateRequest request
+            FcmTokenUpdateRequest request
     );
 }
