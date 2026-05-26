@@ -4,16 +4,21 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.example.when2go.domain.trip.entity.Trip;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 public class RouteSearchRequest {
+
+    private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
     @NotNull
     Double originLat;
@@ -27,4 +32,18 @@ public class RouteSearchRequest {
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     LocalDateTime arrivalTime;
+
+    public static RouteSearchRequest from(Trip trip) {
+        LocalDateTime arrivalTimeKst = trip.getArrivalTime()
+                .atZone(ZoneOffset.UTC)
+                .withZoneSameInstant(KST)
+                .toLocalDateTime();
+        return new RouteSearchRequest(
+                trip.getOriginLat(),
+                trip.getOriginLng(),
+                trip.getDestLat(),
+                trip.getDestLng(),
+                arrivalTimeKst
+        );
+    }
 }

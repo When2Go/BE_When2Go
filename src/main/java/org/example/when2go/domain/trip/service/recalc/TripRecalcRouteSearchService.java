@@ -1,8 +1,5 @@
 package org.example.when2go.domain.trip.service.recalc;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.route.client.RouteClient;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
@@ -25,6 +22,7 @@ public class TripRecalcRouteSearchService {
         return googleRouteClientProvider.getIfAvailable() != null;
     }
 
+    // 재계산 포르세스
     public void process(Long tripId) {
         RouteClient googleRouteClient = googleRouteClientProvider.getIfAvailable();
         if (googleRouteClient == null) {
@@ -33,19 +31,8 @@ public class TripRecalcRouteSearchService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new IllegalArgumentException("Trip not found: " + tripId));
 
-        LocalDateTime arrivalTime = trip.getArrivalTime()
-                .atZone(ZoneOffset.UTC)
-                .withZoneSameInstant(ZoneId.of("Asia/Seoul"))
-                .toLocalDateTime();
-        RouteSearchRequest routeSearchRequest = new RouteSearchRequest(
-                trip.getOriginLat(),
-                trip.getOriginLng(),
-                trip.getDestLat(),
-                trip.getDestLng(),
-                arrivalTime
-        );
-        GoogleRouteSearchRequest request = new GoogleRouteSearchRequest(routeSearchRequest);
-        GoogleRouteSearchResponse result = googleRouteClient.search(request);
-        tripPhaseAdvanceService.advancePhase(tripId, result);
+        GoogleRouteSearchRequest request = new GoogleRouteSearchRequest(RouteSearchRequest.from(trip));
+        GoogleRouteSearchResponse result = googleRouteClient.search(request); // 실제 재계산 수행
+        tripPhaseAdvanceService.advancePhase(tripId, result); // 재계산한 값에 맞게 DB 수정
     }
 }
