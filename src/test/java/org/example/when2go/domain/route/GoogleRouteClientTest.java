@@ -1,15 +1,15 @@
 package org.example.when2go.domain.route;
 
-import org.example.when2go.domain.route.client.GoogleRouteClientImpl;
+import io.github.cdimascio.dotenv.Dotenv;
+import java.time.LocalDateTime;
+import org.example.when2go.domain.route.client.GoogleRouteClient;
 import org.example.when2go.domain.route.dto.RouteSearchRequest;
 import org.example.when2go.domain.route.dto.GoogleRouteSearchRequest;
 import org.example.when2go.domain.route.dto.GoogleRouteSearchResponse;
-import io.github.cdimascio.dotenv.Dotenv;
-import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.reactive.function.client.WebClient;
 
-class GoogleRouteClientImplTest {
+class GoogleRouteClientTest {
 
     private static final String API_KEY = Dotenv.load().get("GOOGLE_ROUTES_API_KEY");
 
@@ -21,7 +21,7 @@ class GoogleRouteClientImplTest {
                 .defaultHeader("X-Goog-FieldMask", "*")
                 .build();
 
-        GoogleRouteClientImpl client = new GoogleRouteClientImpl(webClient);
+        GoogleRouteClient client = new GoogleRouteClient(webClient);
 
         RouteSearchRequest routeSearchRequest = new RouteSearchRequest(
                 37.5665,

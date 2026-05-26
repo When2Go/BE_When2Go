@@ -6,15 +6,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Component
-public class GoogleRouteClientImpl implements RouteClient {
+public class GoogleRouteClient {
 
     private final WebClient webClient;
 
-    public GoogleRouteClientImpl(WebClient googleRoutesWebClient) {
+    public GoogleRouteClient(WebClient googleRoutesWebClient) {
         this.webClient = googleRoutesWebClient;
     }
 
-    @Override
     public GoogleRouteSearchResponse search(GoogleRouteSearchRequest request) {
 
         return webClient.post()
