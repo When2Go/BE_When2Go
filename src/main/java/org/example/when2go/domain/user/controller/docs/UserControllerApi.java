@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateRequest;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
 import org.example.when2go.domain.user.dto.UserStatusResponse;
@@ -49,7 +52,7 @@ public interface UserControllerApi {
             )
     })
     org.example.when2go.global.response.ApiResponse<UserResponse> register(
-            UserRegisterRequest request
+            @Valid UserRegisterRequest request
     );
 
     @Operation(
@@ -104,6 +107,8 @@ public interface UserControllerApi {
                     in = ParameterIn.HEADER,
                     required = true
             )
+            @NotBlank
+            @Size(min = 36, max = 36)
             String deviceId
     );
 
@@ -173,7 +178,9 @@ public interface UserControllerApi {
                     in = ParameterIn.HEADER,
                     required = true
             )
+            @NotBlank
+            @Size(min = 36, max = 36)
             String deviceId,
-            FcmTokenUpdateRequest request
+            @Valid FcmTokenUpdateRequest request
     );
 }
