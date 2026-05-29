@@ -1,11 +1,16 @@
 package org.example.when2go.domain.trip.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
+import org.example.when2go.domain.trip.dto.TripListResponse;
 import org.example.when2go.domain.trip.entity.Trip;
+import org.example.when2go.domain.trip.entity.TripStatus;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.domain.user.error.UserErrorCode;
@@ -53,5 +58,18 @@ public class TripService {
                 .build();
 
         return TripCreateResponse.from(tripRepository.save(trip));
+    }
+    @Transactional(readOnly = true)
+    public List<TripListResponse> list(String deviceId, TripStatus status, LocalDate date) {
+        AppUser user = appUserRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
+
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+
+        return tripRepository.findByUserIdAndStatusAndDate(user.getId(), status, startOfDay, endOfDay)
+                .stream()
+                .map(TripListResponse::from)
+                .toList();
     }
 }
