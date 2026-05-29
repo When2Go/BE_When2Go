@@ -2,6 +2,8 @@ package org.example.when2go.domain.trip.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.entity.TripStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,4 +42,6 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
     );
+
+    Optional<Trip> findByIdAndUserId(Long id, Long userId);
 }

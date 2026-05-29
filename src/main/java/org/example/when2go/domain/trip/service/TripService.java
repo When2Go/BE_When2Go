@@ -8,9 +8,11 @@ import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
+import org.example.when2go.domain.trip.dto.TripDetailResponse;
 import org.example.when2go.domain.trip.dto.TripListResponse;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.entity.TripStatus;
+import org.example.when2go.domain.trip.error.TripErrorCode;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.domain.user.error.UserErrorCode;
@@ -59,6 +61,7 @@ public class TripService {
 
         return TripCreateResponse.from(tripRepository.save(trip));
     }
+
     @Transactional(readOnly = true)
     public List<TripListResponse> list(String deviceId, TripStatus status, LocalDate date) {
         AppUser user = appUserRepository.findByDeviceId(deviceId)
@@ -71,5 +74,27 @@ public class TripService {
                 .stream()
                 .map(TripListResponse::from)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public TripDetailResponse getDetail(String deviceId, Long tripId) {
+        AppUser user = appUserRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
+
+        Trip trip = tripRepository.findByIdAndUserId(tripId, user.getId())
+                .orElseThrow(() -> new DomainException(TripErrorCode.TRIP_NOT_FOUND));
+
+        return TripDetailResponse.from(trip);
+    }
+
+    @Transactional
+    public void delete(String deviceId, Long tripId) {
+        AppUser user = appUserRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
+
+        Trip trip = tripRepository.findByIdAndUserId(tripId, user.getId())
+                .orElseThrow(() -> new DomainException(TripErrorCode.TRIP_NOT_FOUND));
+
+        tripRepository.delete(trip);
     }
 }
