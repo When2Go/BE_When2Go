@@ -2,7 +2,10 @@ package org.example.when2go.domain.trip.repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+
 import org.example.when2go.domain.trip.entity.Trip;
+import org.example.when2go.domain.trip.entity.TripStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -31,4 +34,14 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
             @Param("ids") List<Long> ids,
             @Param("nextRecalcAt") LocalDateTime nextRecalcAt
     );
+
+    @Query("SELECT t FROM Trip t WHERE t.user.id = :userId AND t.status = :status AND t.arrivalTime >= :startOfDay AND t.arrivalTime < :endOfDay ORDER BY t.arrivalTime ASC")
+    List<Trip> findByUserIdAndStatusAndDate(
+            @Param("userId") Long userId,
+            @Param("status")TripStatus status,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay
+    );
+
+    Optional<Trip> findByIdAndUserId(Long id, Long userId);
 }

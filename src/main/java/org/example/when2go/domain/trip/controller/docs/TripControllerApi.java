@@ -10,8 +10,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
+import org.example.when2go.domain.trip.dto.TripDetailResponse;
+import org.example.when2go.domain.trip.dto.TripListResponse;
+import org.example.when2go.domain.trip.entity.TripStatus;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Tag(name = "여정", description = "여정(Trip) API")
 public interface TripControllerApi {
@@ -91,7 +99,75 @@ public interface TripControllerApi {
                     in = ParameterIn.HEADER,
                     required = true
             )
+            @NotBlank
+            @Size(min = 36, max = 36)
             String deviceId,
-            @Valid TripCreateRequest request
+            @Valid
+            TripCreateRequest request
+    );
+
+    @Operation(summary = "여정 목록 조회", description = "날짜와 상태로 필터링된 여정 목록을 반환한다.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "조회 성공"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "status 값 오류 또는 date 형식 오류"
+            )
+    })
+    org.example.when2go.global.response.ApiResponse<List<TripListResponse>> list(
+            @Parameter(
+                    name = "X-Device-Id",
+                    in = ParameterIn.HEADER,
+                    required = true)
+            @NotBlank
+            @Size(min = 36, max = 36)
+            String deviceId,
+            @Parameter(
+                    description = "PENDING | SCHEDULED | COMPLETED",
+                    required = true)
+            TripStatus status,
+            @Parameter(
+                    description = "날짜 (yyyy-MM-dd)",
+                    required = true)
+            LocalDate date
+    );
+
+    @Operation(summary = "여정 상세 조회", description = "tripId에 해당하는 여정의 상세 정보를 반환한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "조회 성공"),
+            @ApiResponse(responseCode = "404", description = "해당 tripId 없음 또는 타인 소유")
+    })
+    org.example.when2go.global.response.ApiResponse<TripDetailResponse> getDetail(
+        @Parameter(
+                name = "X-Device-Id",
+                in = ParameterIn.HEADER,
+                required = true)
+        @NotBlank
+        @Size(min = 36, max = 36)
+        String deviceId,
+        @Parameter(description = "Trip ID", required = true)
+        Long tripId
+    );
+
+    @Operation(summary = "여정 삭제", description = "tripId에 해당하는 여정을 삭제한다.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "삭제 성공"),
+            @ApiResponse(responseCode = "404", description = "해당 tripId 없음 또는 타인 소유")
+    })
+    org.example.when2go.global.response.ApiResponse<Void> delete(
+            @Parameter(
+                    name = "X-Device-Id",
+                    in = ParameterIn.HEADER,
+                    required = true)
+            @NotBlank
+            @Size(min = 36, max = 36)
+            String deviceId,
+            @Parameter(
+                    description = "Trip ID",
+                    required = true)
+            Long tripId
     );
 }
