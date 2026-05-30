@@ -44,4 +44,8 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
     );
 
     Optional<Trip> findByIdAndUserId(Long id, Long userId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Trip t set t.reservation = null where t.reservation.id = :reservationId")
+    int detachReservation(@Param("reservationId") Long reservationId);
 }

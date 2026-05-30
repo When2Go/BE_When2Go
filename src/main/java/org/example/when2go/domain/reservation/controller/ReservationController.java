@@ -8,6 +8,8 @@ import org.example.when2go.domain.reservation.dto.response.ReservationCreateResp
 import org.example.when2go.domain.reservation.service.ReservationService;
 import org.example.when2go.global.response.ApiResponse;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -29,5 +31,15 @@ public class ReservationController implements ReservationControllerApi {
             @Valid @RequestBody ReservationCreateRequest request
     ) {
         return ApiResponse.success(reservationService.create(deviceId, request));
+    }
+
+    @Override
+    @DeleteMapping("/{reservationId}")
+    public ApiResponse<Void> delete(
+            @RequestHeader("X-Device-Id") String deviceId,
+            @PathVariable Long reservationId
+    ) {
+        reservationService.delete(deviceId, reservationId);
+        return ApiResponse.success();
     }
 }
