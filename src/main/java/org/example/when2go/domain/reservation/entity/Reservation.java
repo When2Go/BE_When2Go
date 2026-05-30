@@ -13,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.DayOfWeek;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Objects;
 import java.util.Set;
@@ -68,16 +67,9 @@ public class Reservation extends BaseEntity {
     @Column(name = "arrival_time", nullable = false)
     private LocalTime arrivalTime;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "reservation_type", nullable = false, length = 20)
-    private ReservationType reservationType;
-
     @Convert(converter = DayOfWeekSetConverter.class)
-    @Column(name = "repeat_days")
+    @Column(name = "repeat_days", nullable = false)
     private Set<DayOfWeek> repeatDays;
-
-    @Column(name = "reservation_date")
-    private LocalDateTime reservationDate;
 
     @Builder
     private Reservation(
@@ -91,9 +83,7 @@ public class Reservation extends BaseEntity {
             Double destLng,
             RouteOption routeOption,
             LocalTime arrivalTime,
-            ReservationType reservationType,
-            Set<DayOfWeek> repeatDays,
-            LocalDateTime reservationDate
+            Set<DayOfWeek> repeatDays
     ) {
         this.user = Objects.requireNonNull(user, "user must not be null");
         this.nickname = nickname;
@@ -105,32 +95,10 @@ public class Reservation extends BaseEntity {
         this.destLng = Objects.requireNonNull(destLng, "destLng must not be null");
         this.routeOption = Objects.requireNonNull(routeOption, "routeOption must not be null");
         this.arrivalTime = Objects.requireNonNull(arrivalTime, "arrivalTime must not be null");
-        this.reservationType = Objects.requireNonNull(reservationType, "reservationType must not be null");
-        validateScheduleFields(this.reservationType, repeatDays, reservationDate);
+        Objects.requireNonNull(repeatDays, "repeatDays must not be null");
+        if (repeatDays.isEmpty()) {
+            throw new IllegalArgumentException("repeatDays must not be empty");
+        }
         this.repeatDays = repeatDays;
-        this.reservationDate = reservationDate;
-    }
-
-    private void validateScheduleFields(
-            ReservationType reservationType,
-            Set<DayOfWeek> repeatDays,
-            LocalDateTime reservationDate
-    ) {
-        if (reservationType == ReservationType.ONCE) {
-            Objects.requireNonNull(reservationDate, "reservationDate must not be null");
-            if (repeatDays != null && !repeatDays.isEmpty()) {
-                throw new IllegalArgumentException("repeatDays must be empty for ONCE reservation");
-            }
-            return;
-        }
-
-        if (reservationType == ReservationType.REPEAT) {
-            if (repeatDays == null || repeatDays.isEmpty()) {
-                throw new NullPointerException("repeatDays must not be null");
-            }
-            if (reservationDate != null) {
-                throw new IllegalArgumentException("reservationDate must be null for REPEAT reservation");
-            }
-        }
     }
 }
