@@ -28,7 +28,7 @@ public class ReservationController implements ReservationControllerApi {
     @PostMapping
     public ApiResponse<ReservationCreateResponse> create(
             @RequestHeader("X-Device-Id") String deviceId,
-            @Valid @RequestBody ReservationCreateRequest request
+            @RequestBody ReservationCreateRequest request
     ) {
         return ApiResponse.success(reservationService.create(deviceId, request));
     }
