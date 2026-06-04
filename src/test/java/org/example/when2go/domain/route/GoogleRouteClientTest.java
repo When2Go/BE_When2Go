@@ -28,7 +28,7 @@ class GoogleRouteClientTest {
                 126.9780,
                 37.4979,
                 127.0276,
-                LocalDateTime.of(2026, 5, 16, 10, 0)
+                LocalDateTime.now().plusDays(1).withHour(10).withMinute(0).withSecond(0).withNano(0)
         );
         GoogleRouteSearchRequest request = new GoogleRouteSearchRequest(routeSearchRequest);
 
