@@ -10,10 +10,12 @@ import static org.mockito.Mockito.when;
 
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.example.when2go.domain.reservation.dto.request.ReservationCreateRequest;
 import org.example.when2go.domain.reservation.dto.response.ReservationCreateResponse;
+import org.example.when2go.domain.reservation.dto.response.ReservationListResponse;
 import org.example.when2go.domain.reservation.entity.Reservation;
 import org.example.when2go.domain.reservation.error.ReservationErrorCode;
 import org.example.when2go.domain.reservation.repository.ReservationRepository;
@@ -114,9 +116,19 @@ class ReservationServiceTest {
     }
 
     private Reservation buildReservation(Long id, AppUser owner) {
+        return buildReservation(id, owner, "출근", LocalTime.of(9, 0), Set.of(DayOfWeek.MONDAY));
+    }
+
+    private Reservation buildReservation(
+            Long id,
+            AppUser owner,
+            String nickname,
+            LocalTime arrivalTime,
+            Set<DayOfWeek> repeatDays
+    ) {
         Reservation reservation = Reservation.builder()
                 .user(owner)
-                .nickname("출근")
+                .nickname(nickname)
                 .originName("집")
                 .originLat(37.5)
                 .originLng(127.0)
@@ -124,11 +136,76 @@ class ReservationServiceTest {
                 .destLat(37.55)
                 .destLng(127.05)
                 .routeOption(RouteOption.TRANSIT)
-                .arrivalTime(LocalTime.of(9, 0))
-                .repeatDays(Set.of(DayOfWeek.MONDAY))
+                .arrivalTime(arrivalTime)
+                .repeatDays(repeatDays)
                 .build();
         ReflectionTestUtils.setField(reservation, "id", id);
         return reservation;
+    }
+
+    // 정상 목록 조회: 사용자 예약을 응답 DTO로 매핑한다.
+    @Test
+    void findAllByUserReturnsReservationList() {
+        AppUser user = buildUser(1L);
+        Reservation first = buildReservation(
+                100L,
+                user,
+                "출근",
+                LocalTime.of(9, 0),
+                Set.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY)
+        );
+        Reservation second = buildReservation(
+                101L,
+                user,
+                "운동",
+                LocalTime.of(19, 30),
+                Set.of(DayOfWeek.FRIDAY)
+        );
+
+        when(appUserRepository.findByDeviceId("device-abc")).thenReturn(Optional.of(user));
+        when(reservationRepository.findAllByUserIdOrderByArrivalTimeAscIdAsc(1L))
+                .thenReturn(List.of(first, second));
+
+        ReservationListResponse response = reservationService.findAllByUser("device-abc");
+
+        assertThat(response.items()).hasSize(2);
+        assertThat(response.items())
+                .extracting(ReservationListResponse.Item::id)
+                .containsExactly(100L, 101L);
+        assertThat(response.items().get(0).nickname()).isEqualTo("출근");
+        assertThat(response.items().get(0).originName()).isEqualTo("집");
+        assertThat(response.items().get(0).destName()).isEqualTo("회사");
+        assertThat(response.items().get(0).arrivalTime()).isEqualTo(LocalTime.of(9, 0));
+        assertThat(response.items().get(0).repeatDays())
+                .containsExactlyInAnyOrder(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY);
+        assertThat(response.items().get(0).routeOption()).isEqualTo(RouteOption.TRANSIT);
+    }
+
+    // 예약이 없으면 빈 items를 반환한다.
+    @Test
+    void findAllByUserReturnsEmptyList() {
+        AppUser user = buildUser(1L);
+
+        when(appUserRepository.findByDeviceId("device-abc")).thenReturn(Optional.of(user));
+        when(reservationRepository.findAllByUserIdOrderByArrivalTimeAscIdAsc(1L))
+                .thenReturn(List.of());
+
+        ReservationListResponse response = reservationService.findAllByUser("device-abc");
+
+        assertThat(response.items()).isEmpty();
+    }
+
+    // 사용자가 없으면 USER_NOT_FOUND 예외가 발생한다.
+    @Test
+    void findAllByUserThrowsWhenUserNotFound() {
+        when(appUserRepository.findByDeviceId("device-missing")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> reservationService.findAllByUser("device-missing"))
+                .isInstanceOf(DomainException.class)
+                .extracting(e -> ((DomainException) e).getErrorCode())
+                .isEqualTo(UserErrorCode.USER_NOT_FOUND);
+
+        verify(reservationRepository, never()).findAllByUserIdOrderByArrivalTimeAscIdAsc(any());
     }
 
     // 정상 삭제: trip detach 후 reservation이 삭제되는지 확인한다.
