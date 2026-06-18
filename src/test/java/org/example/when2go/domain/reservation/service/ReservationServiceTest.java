@@ -164,10 +164,6 @@ class ReservationServiceTest {
     }
 
 
-    private Reservation buildReservation(Long id, AppUser owner) {
-        return buildReservation(id, owner, "출근", LocalTime.of(9, 0), Set.of(DayOfWeek.MONDAY));
-    }
-
     private Reservation buildReservation(
             Long id,
             AppUser owner,
