@@ -1,6 +1,7 @@
 package org.example.when2go.domain.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.when2go.domain.user.dto.BufferMinutesUpdateResponse;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
 import org.example.when2go.domain.user.dto.UserStatusResponse;
 import org.example.when2go.domain.user.dto.UserRegisterRequest;
@@ -35,6 +36,14 @@ public class UserService {
                 .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
         user.updateFcmToken(fcmToken);
         return FcmTokenUpdateResponse.from(user);
+    }
+
+    @Transactional
+    public BufferMinutesUpdateResponse updateBufferMinutes(String deviceId, Integer bufferMinutes) {
+        AppUser user = appUserRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
+        user.updateBufferMinutes(bufferMinutes);
+        return BufferMinutesUpdateResponse.from(user);
     }
 
     @Transactional(readOnly = true)
