@@ -2,6 +2,8 @@ package org.example.when2go.domain.user.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.user.controller.docs.UserControllerApi;
+import org.example.when2go.domain.user.dto.BufferMinutesUpdateRequest;
+import org.example.when2go.domain.user.dto.BufferMinutesUpdateResponse;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateRequest;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
 import org.example.when2go.domain.user.dto.UserStatusResponse;
@@ -40,5 +42,13 @@ public class UserController implements UserControllerApi {
             @RequestHeader("X-Device-Id") String deviceId,
             @RequestBody FcmTokenUpdateRequest request) {
         return ApiResponse.success(userService.updateFcmToken(deviceId, request.fcmToken()));
+    }
+
+    @Override
+    @PatchMapping("/me/buffer-minutes")
+    public ApiResponse<BufferMinutesUpdateResponse> updateBufferMinutes(
+            @RequestHeader("X-Device-Id") String deviceId,
+            @RequestBody BufferMinutesUpdateRequest request) {
+        return ApiResponse.success(userService.updateBufferMinutes(deviceId, request.bufferMinutes()));
     }
 }

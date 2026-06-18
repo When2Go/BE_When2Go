@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.example.when2go.domain.user.dto.BufferMinutesUpdateRequest;
+import org.example.when2go.domain.user.dto.BufferMinutesUpdateResponse;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateRequest;
 import org.example.when2go.domain.user.dto.FcmTokenUpdateResponse;
 import org.example.when2go.domain.user.dto.UserStatusResponse;
@@ -182,5 +184,63 @@ public interface UserControllerApi {
             @Size(min = 36, max = 36)
             String deviceId,
             @Valid FcmTokenUpdateRequest request
+    );
+
+    @Operation(
+            summary = "버퍼 시간(분) 수정",
+            description = "요청 헤더 `X-Device-Id`에 담긴 deviceId의 회원에 대해 bufferMinutes 값을 갱신한다. "
+                    + "동일한 값을 다시 전송해도 200 OK가 반환된다 (멱등)."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "버퍼 시간 갱신 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "성공 응답",
+                                    value = "{\"success\": true, \"code\": \"OK\", \"message\": \"요청이 성공했습니다.\", "
+                                            + "\"data\": {\"userId\": 1, \"deviceId\": \"550e8400-e29b-41d4-a716-446655440000\", "
+                                            + "\"bufferMinutes\": 15}}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "유효하지 않은 요청 (X-Device-Id 누락/형식 오류, bufferMinutes 누락 또는 음수)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "잘못된 입력",
+                                    value = "{\"success\": false, \"code\": \"GLOBAL_001\", \"message\": \"잘못된 입력값입니다.\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "해당 deviceId의 회원이 존재하지 않음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "사용자 없음",
+                                    value = "{\"success\": false, \"code\": \"USER_001\", \"message\": \"사용자를 찾을 수 없습니다.\"}"
+                            )
+                    )
+            )
+    })
+    org.example.when2go.global.response.ApiResponse<BufferMinutesUpdateResponse> updateBufferMinutes(
+            @Parameter(
+                    name = "X-Device-Id",
+                    description = "회원 식별용 디바이스 ID (UUID 36자)",
+                    in = ParameterIn.HEADER,
+                    required = true
+            )
+            @NotBlank
+            @Size(min = 36, max = 36)
+            String deviceId,
+            @Valid BufferMinutesUpdateRequest request
     );
 }

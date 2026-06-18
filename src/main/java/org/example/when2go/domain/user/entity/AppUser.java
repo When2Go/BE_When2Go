@@ -74,4 +74,11 @@ public class AppUser extends BaseEntity {
         this.fcmToken = newToken;
     }
 
+    public void updateBufferMinutes(Integer newBufferMinutes) {
+        if (Objects.equals(this.bufferMinutes, newBufferMinutes)) {
+            return;
+        }
+        this.bufferMinutes = newBufferMinutes;
+    }
+
 }
