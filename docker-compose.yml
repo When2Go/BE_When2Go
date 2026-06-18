@@ -9,6 +9,7 @@ services:
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
       DB_PWD: ${DB_PWD}
+      GOOGLE_ROUTES_API_KEY: ${GOOGLE_ROUTES_API_KEY}
     depends_on:
       when2go-redis:
         condition: service_healthy

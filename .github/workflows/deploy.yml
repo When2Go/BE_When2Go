@@ -83,6 +83,7 @@ jobs:
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PWD=${{ secrets.DB_PWD }}
             GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
+            GOOGLE_ROUTES_API_KEY=${{ secrets.GOOGLE_ROUTES_API_KEY }}
             EOF
             chmod 600 .env
 
@@ -125,6 +126,8 @@ jobs:
             DB_URL=${{ secrets.DB_URL }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PWD=${{ secrets.DB_PWD }}
+            GOOGLE_ROUTES_API_KEY=${{ secrets.GOOGLE_ROUTES_API_KEY }}
+
             EOF
             chmod 600 .env
 
