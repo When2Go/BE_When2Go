@@ -3,11 +3,13 @@ package org.example.when2go.global.scheduler;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.trip.event.TripRecalcScanRequestedEvent;
 import org.example.when2go.global.config.trip.TripRecalcProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(prefix = "trip.recalc", name = "enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class TripRecalcScheduler {
 
