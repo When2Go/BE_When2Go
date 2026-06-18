@@ -18,6 +18,7 @@ public class NotificationProperties {
     private Schedule schedule = new Schedule();
     private Outbox outbox = new Outbox();
     private Sqs sqs = new Sqs();
+    private Fcm fcm = new Fcm();
 
     @Getter
     @Setter
@@ -49,5 +50,14 @@ public class NotificationProperties {
         private boolean enabled = false;
         private String region = "ap-northeast-2";
         private String queueUrl;
+    }
+
+    @Getter
+    @Setter
+    public static class Fcm {
+
+        private boolean enabled = false;
+        private String credentialsPath;
+        private String credentialsBase64;
     }
 }
