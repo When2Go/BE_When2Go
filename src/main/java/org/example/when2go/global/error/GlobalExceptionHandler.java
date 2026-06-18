@@ -1,5 +1,6 @@
 package org.example.when2go.global.error;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.global.response.ApiResponse;
 import org.springframework.http.ResponseEntity;
@@ -41,6 +42,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ApiResponse<Void>> handleHandlerMethodValidationException(HandlerMethodValidationException e) {
         log.warn("Method parameter validation failed: {}", e.getMessage());
+        return ResponseEntity
+                .status(GlobalErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
+                .body(ApiResponse.error(GlobalErrorCode.INVALID_INPUT_VALUE));
+    }
+
+    // AOP 기반 메서드 파라미터 검증 예외 처리 (@Validated + @NotBlank/@Size 등이 인터페이스에 선언된 경우)
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConstraintViolationException(ConstraintViolationException e) {
+        log.warn("Constraint violation: {}", e.getMessage());
         return ResponseEntity
                 .status(GlobalErrorCode.INVALID_INPUT_VALUE.getHttpStatus())
                 .body(ApiResponse.error(GlobalErrorCode.INVALID_INPUT_VALUE));
