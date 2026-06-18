@@ -5,10 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.example.when2go.global.config.notification.NotificationProperties;
 import org.example.when2go.domain.notification.entity.NotificationOutboxStatus;
 import org.example.when2go.domain.notification.repository.NotificationScheduleOutboxRepository;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+// release 단순화로 빈 등록 해제됨. 코드 보존용.
 @RequiredArgsConstructor
 public class NotificationOutboxRecoveryService {
 

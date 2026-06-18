@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release
       - 743hw4n/chore/9/deploy
     paths-ignore:
       - README.md

@@ -1,15 +1,28 @@
 package org.example.when2go.domain.notification.repository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import org.example.when2go.domain.notification.entity.NotificationSchedule;
 import org.example.when2go.domain.notification.entity.NotificationScheduleStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface NotificationScheduleRepository extends JpaRepository<NotificationSchedule, Long> {
+
+    @Query("""
+            SELECT s
+            FROM NotificationSchedule s
+            JOIN FETCH s.user
+            JOIN FETCH s.trip
+            WHERE s.status = org.example.when2go.domain.notification.entity.NotificationScheduleStatus.PENDING
+              AND s.scheduledAt <= :now
+            ORDER BY s.scheduledAt ASC, s.id ASC
+            """)
+    List<NotificationSchedule> findDueSchedules(@Param("now") LocalDateTime now, Pageable pageable);
 
     @Query(
             value = """
@@ -44,6 +57,13 @@ public interface NotificationScheduleRepository extends JpaRepository<Notificati
             @Param("ids") Collection<Long> ids,
             @Param("status") NotificationScheduleStatus status
     );
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+            DELETE FROM NotificationSchedule s
+            WHERE s.trip.id = :tripId
+            """)
+    int deleteByTripId(@Param("tripId") Long tripId);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""

@@ -4,8 +4,10 @@ import static org.mockito.Mockito.verify;
 
 import org.example.when2go.domain.notification.event.NotificationScheduleScanRequestedEvent;
 import org.example.when2go.domain.notification.service.schedule.NotificationScheduleDrainService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled("release 단순화로 비활성화 - outbox 흐름 제거됨")
 class NotificationScheduleScanEventListenerTest {
 
     private final NotificationScheduleDrainService notificationScheduleDrainService =
