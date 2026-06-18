@@ -15,13 +15,12 @@ import org.example.when2go.domain.notification.event.NotificationOutboxesCreated
 import org.example.when2go.domain.notification.repository.NotificationScheduleOutboxRepository;
 import org.example.when2go.domain.notification.repository.NotificationScheduleRepository;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+// release 단순화로 빈 등록 해제됨. 코드 보존용.
 @Slf4j
-@Service
 @RequiredArgsConstructor
 public class NotificationScheduleBatchService {
 

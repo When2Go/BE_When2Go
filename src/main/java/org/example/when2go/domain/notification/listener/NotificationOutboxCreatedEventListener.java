@@ -5,16 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.notification.event.NotificationOutboxesCreatedEvent;
 import org.example.when2go.domain.notification.service.outbox.NotificationOutboxPublishService;
 import org.example.when2go.global.config.notification.NotificationAsyncConfig;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+// release 단순화로 빈 등록 해제됨. 코드 보존용.
 @Slf4j
-@Component
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "notification.sqs", name = "enabled", havingValue = "true")
 public class NotificationOutboxCreatedEventListener {
 
     private final NotificationOutboxPublishService notificationOutboxPublishService;

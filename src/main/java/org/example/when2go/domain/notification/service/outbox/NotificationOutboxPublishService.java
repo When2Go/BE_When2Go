@@ -9,13 +9,10 @@ import org.example.when2go.domain.notification.client.NotificationSqsClient;
 import org.example.when2go.domain.notification.dto.NotificationSqsBatchResult;
 import org.example.when2go.domain.notification.dto.NotificationSqsPayload;
 import org.example.when2go.domain.notification.entity.NotificationScheduleOutbox;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.stereotype.Service;
 
+// release 단순화로 빈 등록 해제됨. 코드 보존용.
 @Slf4j
-@Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(prefix = "notification.sqs", name = "enabled", havingValue = "true")
 public class NotificationOutboxPublishService {
 
     private final NotificationOutboxClaimService notificationOutboxClaimService;

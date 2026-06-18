@@ -2,9 +2,8 @@ package org.example.when2go.domain.notification.service.schedule;
 
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.global.config.notification.NotificationProperties;
-import org.springframework.stereotype.Service;
 
-@Service
+// release 단순화로 빈 등록 해제됨. 코드 보존용.
 @RequiredArgsConstructor
 public class NotificationScheduleDrainService {
 
