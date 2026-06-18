@@ -22,3 +22,9 @@ spring:
     redis:
       host: when2go-redis
       port: 6379
+
+notification:
+  fcm:
+    enabled: ${NOTIFICATION_FCM_ENABLED:false}
+    credentials-path: ${FCM_CREDENTIALS_PATH:}
+    credentials-base64: ${FCM_CREDENTIALS_BASE64:}
