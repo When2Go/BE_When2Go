@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.reservation.dto.request.ReservationCreateRequest;
 import org.example.when2go.domain.reservation.dto.response.ReservationCreateResponse;
+import org.example.when2go.domain.reservation.dto.response.ReservationListResponse;
 import org.example.when2go.domain.reservation.entity.Reservation;
 import org.example.when2go.domain.reservation.error.ReservationErrorCode;
 import org.example.when2go.domain.reservation.repository.ReservationRepository;
@@ -59,6 +60,16 @@ public class ReservationService {
                 .build();
 
         return ReservationCreateResponse.from(reservationRepository.save(reservation));
+    }
+
+    @Transactional(readOnly = true)
+    public ReservationListResponse findAllByUser(String deviceId) {
+        AppUser user = appUserRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
+
+        return ReservationListResponse.from(
+                reservationRepository.findAllByUserIdOrderByArrivalTimeAscIdAsc(user.getId())
+        );
     }
 
     @Transactional

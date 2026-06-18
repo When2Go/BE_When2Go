@@ -14,9 +14,68 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.example.when2go.domain.reservation.dto.request.ReservationCreateRequest;
 import org.example.when2go.domain.reservation.dto.response.ReservationCreateResponse;
+import org.example.when2go.domain.reservation.dto.response.ReservationListResponse;
 
 @Tag(name = "예약", description = "예약(Reservation) API")
 public interface ReservationControllerApi {
+
+    @Operation(
+            summary = "예약 목록 조회",
+            description = "요청 헤더 `X-Device-Id`로 식별되는 회원의 예약 목록을 도착 시각 순으로 조회한다."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "예약 목록 조회 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "성공 응답",
+                                    value = "{\"success\": true, \"code\": \"OK\", \"message\": \"요청이 성공했습니다.\", "
+                                            + "\"data\": {\"items\": [{\"id\": 1, \"nickname\": \"출근\", "
+                                            + "\"originName\": \"집\", \"destName\": \"회사\", "
+                                            + "\"arrivalTime\": \"09:00:00\", \"repeatDays\": [\"MONDAY\"], "
+                                            + "\"routeOption\": \"TRANSIT\"}]}}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "유효하지 않은 요청 (X-Device-Id 누락/형식 오류 등)",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "X-Device-Id 헤더 누락",
+                                    value = "{\"success\": false, \"code\": \"GLOBAL_003\", \"message\": \"필수 파라미터가 누락되었습니다.\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "해당 deviceId의 회원이 존재하지 않음",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "사용자 없음",
+                                    value = "{\"success\": false, \"code\": \"USER_001\", \"message\": \"사용자를 찾을 수 없습니다.\"}"
+                            )
+                    )
+            )
+    })
+    org.example.when2go.global.response.ApiResponse<ReservationListResponse> list(
+            @Parameter(
+                    name = "X-Device-Id",
+                    description = "회원 식별용 디바이스 ID (UUID 36자)",
+                    in = ParameterIn.HEADER,
+                    required = true
+            )
+            @NotBlank
+            @Size(min = 36, max = 36)
+            String deviceId
+    );
 
     @Operation(
             summary = "예약 생성",
