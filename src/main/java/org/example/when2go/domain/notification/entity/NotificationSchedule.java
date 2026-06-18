@@ -79,4 +79,8 @@ public class NotificationSchedule extends BaseEntity {
     public void markFailed() {
         this.status = NotificationScheduleStatus.FAILED;
     }
+
+    public void markExpired() {
+        this.status = NotificationScheduleStatus.EXPIRED;
+    }
 }
