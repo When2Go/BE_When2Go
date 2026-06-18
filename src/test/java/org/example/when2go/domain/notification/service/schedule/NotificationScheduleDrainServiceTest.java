@@ -9,9 +9,11 @@ import static org.mockito.Mockito.when;
 
 import org.example.when2go.global.config.notification.NotificationProperties;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 
+@Disabled("release 단순화로 비활성화 - outbox 흐름 제거됨")
 class NotificationScheduleDrainServiceTest {
 
     private final NotificationScheduleBatchService notificationScheduleBatchService =

@@ -10,9 +10,11 @@ import java.util.Collection;
 import org.example.when2go.domain.notification.entity.NotificationOutboxStatus;
 import org.example.when2go.domain.notification.repository.NotificationScheduleOutboxRepository;
 import org.example.when2go.domain.notification.repository.NotificationScheduleRepository;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+@Disabled("release 단순화로 비활성화 - outbox 흐름 제거됨")
 class NotificationCleanupServiceTest {
 
     private final NotificationScheduleOutboxRepository notificationScheduleOutboxRepository =

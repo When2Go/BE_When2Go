@@ -5,8 +5,10 @@ import static org.mockito.Mockito.verify;
 
 import org.example.when2go.domain.notification.event.NotificationOutboxesCreatedEvent;
 import org.example.when2go.domain.notification.service.outbox.NotificationOutboxPublishService;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
+@Disabled("release 단순화로 비활성화 - outbox 흐름 제거됨")
 class NotificationOutboxCreatedEventListenerTest {
 
     private final NotificationOutboxPublishService notificationOutboxPublishService =
