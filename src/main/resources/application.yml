@@ -6,3 +6,8 @@ google:
   routes:
     api-key: ${GOOGLE_ROUTES_API_KEY:}
     base-url: ${GOOGLE_ROUTES_BASE_URL:https://routes.googleapis.com}
+
+gemini:
+  api-key: ${GEMINI_API_KEY:}
+  base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
+  model: ${GEMINI_MODEL:gemini-2.5-flash-lite}
