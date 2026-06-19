@@ -1,6 +1,7 @@
 package org.example.when2go.domain.notification.service.dispatch;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.notification.client.NotificationPushClient;
@@ -72,7 +73,10 @@ public class NotificationDispatcher {
                 token,
                 message.title(),
                 message.body(),
-                null
+                Map.of(
+                        "tripId", String.valueOf(schedule.getTrip().getId()),
+                        "type", schedule.getType().name()
+                )
         ));
 
         if (result.success()) {

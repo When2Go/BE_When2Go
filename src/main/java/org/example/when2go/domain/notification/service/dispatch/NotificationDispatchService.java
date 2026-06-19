@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 public class NotificationDispatchService {
 
     private static final int DEFAULT_LIMIT = 100;
-    private static final int GRACE_PERIOD_MINUTES = 1;
+    private static final int GRACE_PERIOD_MINUTES = 3;
 
     private final NotificationScheduleRepository notificationScheduleRepository;
     private final NotificationDispatcher notificationDispatcher;
