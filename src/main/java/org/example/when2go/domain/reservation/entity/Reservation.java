@@ -101,4 +101,40 @@ public class Reservation extends BaseEntity {
         }
         this.repeatDays = repeatDays;
     }
+
+    public void update(
+            String nickname,
+            String originName,
+            Double originLat,
+            Double originLng,
+            String destName,
+            Double destLat,
+            Double destLng,
+            RouteOption routeOption,
+            LocalTime arrivalTime,
+            Set<DayOfWeek> repeatDays
+    ) {
+        Objects.requireNonNull(originName, "originName must not be null");
+        Objects.requireNonNull(originLat, "originLat must not be null");
+        Objects.requireNonNull(originLng, "originLng must not be null");
+        Objects.requireNonNull(destName, "destName must not be null");
+        Objects.requireNonNull(destLat, "destLat must not be null");
+        Objects.requireNonNull(destLng, "destLng must not be null");
+        Objects.requireNonNull(routeOption, "routeOption must not be null");
+        Objects.requireNonNull(arrivalTime, "arrivalTime must not be null");
+        Objects.requireNonNull(repeatDays, "repeatDays must not be null");
+        if (repeatDays.isEmpty()) {
+            throw new IllegalArgumentException("repeatDays must not be empty");
+        }
+        this.nickname = nickname;
+        this.originName = originName;
+        this.originLat = originLat;
+        this.originLng = originLng;
+        this.destName = destName;
+        this.destLat = destLat;
+        this.destLng = destLng;
+        this.routeOption = routeOption;
+        this.arrivalTime = arrivalTime;
+        this.repeatDays = repeatDays;
+    }
 }
