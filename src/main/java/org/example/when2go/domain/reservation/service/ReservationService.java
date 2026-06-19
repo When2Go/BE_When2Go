@@ -60,7 +60,10 @@ public class ReservationService {
                 .repeatDays(request.repeatDays())
                 .build();
 
-        return ReservationCreateResponse.from(reservationRepository.save(reservation));
+        Reservation savedReservation = reservationRepository.save(reservation);
+        createTodayTripForNewReservationIfNeeded(savedReservation);
+
+        return ReservationCreateResponse.from(savedReservation);
     }
 
     @Transactional(readOnly = true)
@@ -178,6 +181,32 @@ public class ReservationService {
                 .bufferMinutes(reservation.getUser().getBufferMinutes())
                 .nextRecalcAt(nextRecalcAt)
                 .build());
+    }
+
+    private void createTodayTripForNewReservationIfNeeded(Reservation reservation) {
+        LocalDate today = LocalDate.now(clock);
+        if (!reservation.getRepeatDays().contains(today.getDayOfWeek())) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now(clock);
+        LocalDateTime arrivalTime = today.atTime(reservation.getArrivalTime());
+        if (!arrivalTime.isAfter(now)) {
+            log.info(
+                    "event=reservation.trip_create_skipped reason=arrival_time_passed reservationId={} arrivalTime={}",
+                    reservation.getId(),
+                    arrivalTime
+            );
+            return;
+        }
+
+        GoogleRouteClient googleRouteClient = googleRouteClientProvider.getIfAvailable();
+        if (googleRouteClient == null) {
+            log.warn("event=reservation.trip_create_skipped reason=google_route_client_missing");
+            return;
+        }
+
+        createTripIfAbsent(reservation, today, googleRouteClient);
     }
 
 }
