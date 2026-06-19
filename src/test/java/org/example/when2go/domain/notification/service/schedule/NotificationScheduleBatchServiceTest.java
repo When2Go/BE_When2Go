@@ -21,11 +21,13 @@ import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.domain.user.entity.Platform;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
+@Disabled("release 단순화로 비활성화 - outbox 흐름 제거됨")
 class NotificationScheduleBatchServiceTest {
 
     private final NotificationScheduleRepository notificationScheduleRepository =

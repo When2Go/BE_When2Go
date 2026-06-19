@@ -3,6 +3,7 @@ package org.example.when2go.domain.reservation.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.reservation.dto.request.ReservationCreateRequest;
+import org.example.when2go.domain.reservation.dto.request.ReservationUpdateRequest;
 import org.example.when2go.domain.reservation.dto.response.ReservationCreateResponse;
 import org.example.when2go.domain.reservation.dto.response.ReservationListResponse;
 import org.example.when2go.domain.reservation.entity.Reservation;
@@ -59,7 +60,10 @@ public class ReservationService {
                 .repeatDays(request.repeatDays())
                 .build();
 
-        return ReservationCreateResponse.from(reservationRepository.save(reservation));
+        Reservation savedReservation = reservationRepository.save(reservation);
+        createTodayTripForNewReservationIfNeeded(savedReservation);
+
+        return ReservationCreateResponse.from(savedReservation);
     }
 
     @Transactional(readOnly = true)
@@ -69,6 +73,32 @@ public class ReservationService {
 
         return ReservationListResponse.from(
                 reservationRepository.findAllByUserIdOrderByArrivalTimeAscIdAsc(user.getId())
+        );
+    }
+
+    @Transactional
+    public void update(String deviceId, Long reservationId, ReservationUpdateRequest request) {
+        AppUser user = appUserRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new DomainException(ReservationErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getUser().getId().equals(user.getId())) {
+            throw new DomainException(ReservationErrorCode.RESERVATION_FORBIDDEN);
+        }
+
+        reservation.update(
+                request.nickname(),
+                request.originName(),
+                request.originLat(),
+                request.originLng(),
+                request.destName(),
+                request.destLat(),
+                request.destLng(),
+                request.routeOption(),
+                request.arrivalTime(),
+                request.repeatDays()
         );
     }
 
@@ -151,6 +181,32 @@ public class ReservationService {
                 .bufferMinutes(reservation.getUser().getBufferMinutes())
                 .nextRecalcAt(nextRecalcAt)
                 .build());
+    }
+
+    private void createTodayTripForNewReservationIfNeeded(Reservation reservation) {
+        LocalDate today = LocalDate.now(clock);
+        if (!reservation.getRepeatDays().contains(today.getDayOfWeek())) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now(clock);
+        LocalDateTime arrivalTime = today.atTime(reservation.getArrivalTime());
+        if (!arrivalTime.isAfter(now)) {
+            log.info(
+                    "event=reservation.trip_create_skipped reason=arrival_time_passed reservationId={} arrivalTime={}",
+                    reservation.getId(),
+                    arrivalTime
+            );
+            return;
+        }
+
+        GoogleRouteClient googleRouteClient = googleRouteClientProvider.getIfAvailable();
+        if (googleRouteClient == null) {
+            log.warn("event=reservation.trip_create_skipped reason=google_route_client_missing");
+            return;
+        }
+
+        createTripIfAbsent(reservation, today, googleRouteClient);
     }
 
 }

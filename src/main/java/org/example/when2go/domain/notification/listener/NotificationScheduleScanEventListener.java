@@ -7,10 +7,9 @@ import org.example.when2go.domain.notification.service.schedule.NotificationSche
 import org.example.when2go.global.config.notification.NotificationAsyncConfig;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 
+// release 단순화로 빈 등록 해제됨. 코드 보존용.
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class NotificationScheduleScanEventListener {
 

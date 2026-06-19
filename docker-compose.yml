@@ -6,10 +6,16 @@ services:
       - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      TZ: ${TZ:-Asia/Seoul}
+      JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Duser.timezone=Asia/Seoul}
       DB_URL: ${DB_URL}
       DB_USERNAME: ${DB_USERNAME}
       DB_PWD: ${DB_PWD}
       GOOGLE_ROUTES_API_KEY: ${GOOGLE_ROUTES_API_KEY}
+      TRIP_RECALC_ENABLED: ${TRIP_RECALC_ENABLED:-true}
+      NOTIFICATION_FCM_ENABLED: ${NOTIFICATION_FCM_ENABLED:-false}
+      FCM_CREDENTIALS_PATH: ${FCM_CREDENTIALS_PATH:-}
+      FCM_CREDENTIALS_BASE64: ${FCM_CREDENTIALS_BASE64:-}
     depends_on:
       when2go-redis:
         condition: service_healthy
