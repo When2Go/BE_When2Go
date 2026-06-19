@@ -3,6 +3,7 @@ package org.example.when2go.domain.reservation.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.reservation.dto.request.ReservationCreateRequest;
+import org.example.when2go.domain.reservation.dto.request.ReservationUpdateRequest;
 import org.example.when2go.domain.reservation.dto.response.ReservationCreateResponse;
 import org.example.when2go.domain.reservation.dto.response.ReservationListResponse;
 import org.example.when2go.domain.reservation.entity.Reservation;
@@ -69,6 +70,32 @@ public class ReservationService {
 
         return ReservationListResponse.from(
                 reservationRepository.findAllByUserIdOrderByArrivalTimeAscIdAsc(user.getId())
+        );
+    }
+
+    @Transactional
+    public void update(String deviceId, Long reservationId, ReservationUpdateRequest request) {
+        AppUser user = appUserRepository.findByDeviceId(deviceId)
+                .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new DomainException(ReservationErrorCode.RESERVATION_NOT_FOUND));
+
+        if (!reservation.getUser().getId().equals(user.getId())) {
+            throw new DomainException(ReservationErrorCode.RESERVATION_FORBIDDEN);
+        }
+
+        reservation.update(
+                request.nickname(),
+                request.originName(),
+                request.originLat(),
+                request.originLng(),
+                request.destName(),
+                request.destLat(),
+                request.destLng(),
+                request.routeOption(),
+                request.arrivalTime(),
+                request.repeatDays()
         );
     }
 
