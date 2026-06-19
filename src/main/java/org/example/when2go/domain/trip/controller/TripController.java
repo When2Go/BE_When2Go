@@ -6,16 +6,20 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.trip.controller.docs.TripControllerApi;
+import org.example.when2go.domain.trip.dto.NavigationParseResponse;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
 import org.example.when2go.domain.trip.dto.TripDetailResponse;
 import org.example.when2go.domain.trip.dto.TripListResponse;
 import org.example.when2go.domain.trip.entity.TripStatus;
+import org.example.when2go.domain.trip.service.NavigationParseService;
 import org.example.when2go.domain.trip.service.TripService;
 import org.example.when2go.global.response.ApiResponse;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,6 +31,15 @@ import java.util.List;
 public class TripController implements TripControllerApi {
 
     private final TripService tripService;
+    private final NavigationParseService navigationParseService;
+
+    @Override
+    @PostMapping(value = "/parse", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<NavigationParseResponse> parse(
+            @RequestParam("audio") MultipartFile audio
+    ) {
+        return ApiResponse.success(navigationParseService.parse(audio));
+    }
 
     @Override
     @PostMapping

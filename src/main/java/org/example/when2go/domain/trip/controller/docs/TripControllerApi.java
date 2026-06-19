@@ -12,17 +12,73 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.example.when2go.domain.trip.dto.NavigationParseResponse;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
 import org.example.when2go.domain.trip.dto.TripDetailResponse;
 import org.example.when2go.domain.trip.dto.TripListResponse;
 import org.example.when2go.domain.trip.entity.TripStatus;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "여정", description = "여정(Trip) API")
 public interface TripControllerApi {
+
+    @Operation(
+            summary = "음성 자연어 파싱",
+            description = "사용자의 음성 파일(multipart, 필드명 `audio`)을 받아 Gemini로 출발지/도착지/약속시각을 추출한다. "
+                    + "DB에 저장하지 않으며, 앱이 여정 생성 폼을 미리 채우는 용도로 사용한다. "
+                    + "appointmentTime은 현재 시각 기준으로 날짜까지 추론한 yyyy-MM-dd HH:mm이며, 시간 정보가 없으면 null이다."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "파싱 성공",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "성공 응답",
+                                    value = "{\"success\": true, \"code\": \"OK\", \"message\": \"요청이 성공했습니다.\", "
+                                            + "\"data\": {\"startLocation\": null, \"endLocation\": \"강남역\", "
+                                            + "\"appointmentTime\": \"2026-06-19 14:00\"}}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "오디오 파일 누락 또는 형식 오류",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "오디오 오류",
+                                    value = "{\"success\": false, \"code\": \"PARSE_001\", \"message\": \"유효하지 않은 오디오 파일입니다.\"}"
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "502",
+                    description = "Gemini 호출 또는 파싱 실패",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = org.example.when2go.global.response.ApiResponse.class),
+                            examples = @ExampleObject(
+                                    name = "파싱 실패",
+                                    value = "{\"success\": false, \"code\": \"PARSE_002\", \"message\": \"음성 파싱에 실패했습니다.\"}"
+                            )
+                    )
+            )
+    })
+    org.example.when2go.global.response.ApiResponse<NavigationParseResponse> parse(
+            @Parameter(
+                    description = "음성 파일 (mp3, wav, m4a, aac, flac, ogg)",
+                    required = true
+            )
+            MultipartFile audio
+    );
 
     @Operation(
             summary = "여정 생성",
