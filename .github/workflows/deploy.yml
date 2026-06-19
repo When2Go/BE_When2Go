@@ -75,6 +75,11 @@ jobs:
             export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_KEY }}'
             export AWS_DEFAULT_REGION='${{ secrets.AWS_REGION }}'
 
+            if [ '${{ secrets.FCM_CREDENTIALS_JSON != '' }}' != 'true' ] && [ '${{ secrets.FCM_CREDENTIALS_BASE64 != '' }}' != 'true' ]; then
+              echo "FCM_CREDENTIALS_JSON or FCM_CREDENTIALS_BASE64 secret is required for demo notification deploy"
+              exit 1
+            fi
+
             cat > .env <<'EOF'
             APP_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
             AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY }}
@@ -85,51 +90,29 @@ jobs:
             DB_PWD=${{ secrets.DB_PWD }}
             GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
             GOOGLE_ROUTES_API_KEY=${{ secrets.GOOGLE_ROUTES_API_KEY }}
+            TZ=Asia/Seoul
+            JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Seoul
+            TRIP_RECALC_ENABLED=true
+            NOTIFICATION_FCM_ENABLED=true
             EOF
-            chmod 600 .env
 
-            aws ecr get-login-password --region "${{ secrets.AWS_REGION }}" \
-              | docker login --username AWS --password-stdin "${{ steps.login-ecr.outputs.registry }}"
+            if [ '${{ secrets.FCM_CREDENTIALS_JSON != '' }}' = 'true' ]; then
+              mkdir -p .secrets
+              cat > .secrets/when2go-firebase-adminsdk.json <<'EOF_FIREBASE'
+            ${{ secrets.FCM_CREDENTIALS_JSON }}
+            EOF_FIREBASE
+              chmod 600 .secrets/when2go-firebase-adminsdk.json
+              {
+                echo "FCM_CREDENTIALS_PATH=.secrets/when2go-firebase-adminsdk.json"
+                echo "FCM_CREDENTIALS_BASE64="
+              } >> .env
+            else
+              {
+                echo "FCM_CREDENTIALS_PATH="
+                printf 'FCM_CREDENTIALS_BASE64=%s\n' '${{ secrets.FCM_CREDENTIALS_BASE64 }}'
+              } >> .env
+            fi
 
-            docker compose pull app
-            docker compose up -d --remove-orphans
-            docker image prune -f
-
-      - name: Copy docker-compose.yml to Scheduler EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.EC2_SCHEDULER_HOST }}
-          username: ${{ secrets.EC2_SCHEDULER_USER }}
-          key: ${{ secrets.EC2_SCHEDULER_SSH_KEY }}
-          source: docker-compose.yml
-          target: /home/${{ secrets.EC2_SCHEDULER_USER }}/when2go
-
-      - name: Deploy to Scheduler EC2
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.EC2_SCHEDULER_HOST }}
-          username: ${{ secrets.EC2_SCHEDULER_USER }}
-          key: ${{ secrets.EC2_SCHEDULER_SSH_KEY }}
-          script: |
-            set -e
-
-            cd /home/${{ secrets.EC2_SCHEDULER_USER }}/when2go
-
-            export AWS_ACCESS_KEY_ID='${{ secrets.AWS_ACCESS_KEY }}'
-            export AWS_SECRET_ACCESS_KEY='${{ secrets.AWS_SECRET_KEY }}'
-            export AWS_DEFAULT_REGION='${{ secrets.AWS_REGION }}'
-
-            cat > .env <<'EOF'
-            APP_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
-            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY }}
-            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_KEY }}
-            AWS_REGION=${{ secrets.AWS_REGION }}
-            DB_URL=${{ secrets.DB_URL }}
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PWD=${{ secrets.DB_PWD }}
-            GOOGLE_ROUTES_API_KEY=${{ secrets.GOOGLE_ROUTES_API_KEY }}
-
-            EOF
             chmod 600 .env
 
             aws ecr get-login-password --region "${{ secrets.AWS_REGION }}" \
