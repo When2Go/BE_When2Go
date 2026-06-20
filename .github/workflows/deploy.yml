@@ -90,6 +90,7 @@ jobs:
             DB_PWD=${{ secrets.DB_PWD }}
             GRAFANA_ADMIN_PASSWORD=${{ secrets.GRAFANA_ADMIN_PASSWORD }}
             GOOGLE_ROUTES_API_KEY=${{ secrets.GOOGLE_ROUTES_API_KEY }}
+            GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
             TZ=Asia/Seoul
             JAVA_TOOL_OPTIONS=-Duser.timezone=Asia/Seoul
             TRIP_RECALC_ENABLED=true
