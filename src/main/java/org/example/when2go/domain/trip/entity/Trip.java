@@ -101,6 +101,9 @@ public class Trip extends BaseEntity {
     @Column(name = "error_minutes")
     private Integer errorMinutes;
 
+    @Column(name = "nearby_recommendations", columnDefinition = "TEXT")
+    private String nearbyRecommendations;
+
     @Builder
     private Trip(
             AppUser user,
@@ -157,5 +160,9 @@ public class Trip extends BaseEntity {
         this.recalcPhase = TripRecalcPhase.DONE;
         this.nextRecalcAt = null;
         this.status = TripStatus.SCHEDULED;
+    }
+
+    public void updateNearbyRecommendations(String json) {
+        this.nearbyRecommendations = json;
     }
 }
