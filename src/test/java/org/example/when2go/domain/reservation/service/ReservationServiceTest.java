@@ -19,6 +19,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
 import org.example.when2go.domain.reservation.dto.request.ReservationCreateRequest;
 import org.example.when2go.domain.reservation.dto.response.ReservationCreateResponse;
 import org.example.when2go.domain.reservation.dto.response.ReservationListResponse;
@@ -51,12 +52,14 @@ class ReservationServiceTest {
     private final TripRepository tripRepository = mock(TripRepository.class);
     @SuppressWarnings("unchecked")
     private final ObjectProvider<GoogleRouteClient> googleRouteClientProvider = mock(ObjectProvider.class);
+    private final NotificationScheduleCreateService notificationScheduleCreateService =
+            mock(NotificationScheduleCreateService.class);
     private final Clock clock = Clock.fixed(
             TODAY.atStartOfDay().toInstant(ZoneOffset.UTC), ZoneOffset.UTC
     );
     private final ReservationService reservationService = new ReservationService(
             reservationRepository, appUserRepository, tripRepository,
-            googleRouteClientProvider, clock
+            googleRouteClientProvider, notificationScheduleCreateService, clock
     );
 
     private AppUser buildUser(Long id) {
@@ -395,28 +398,6 @@ class ReservationServiceTest {
         reservationService.createTodayTrips();
 
         verify(tripRepository, never()).save(any());
-    }
-
-    // nextRecalcAt이 현재 시각보다 이전이면 now로 보정한다.
-    @Test
-    void createTodayTripsUsesNowWhenNextRecalcAtIsInPast() {
-        AppUser user = buildUser(1L);
-        // 도착 00:10, 소요 30분 → 예상 출발 23:40(전날), nextRecalcAt = 22:40(전날) → 이미 과거
-        Reservation reservation = buildReservation(100L, user, LocalTime.of(0, 10), Set.of(DayOfWeek.THURSDAY));
-        GoogleRouteClient client = mock(GoogleRouteClient.class);
-
-        when(googleRouteClientProvider.getIfAvailable()).thenReturn(client);
-        when(reservationRepository.findAllWithUser()).thenReturn(List.of(reservation));
-        when(tripRepository.existsByReservationIdAndArrivalTimeBetween(eq(100L), any(), any()))
-                .thenReturn(false);
-        when(client.search(any())).thenReturn(buildRouteResponse(1800)); // 30분
-
-        ArgumentCaptor<Trip> captor = ArgumentCaptor.forClass(Trip.class);
-        reservationService.createTodayTrips();
-
-        verify(tripRepository).save(captor.capture());
-        LocalDateTime expectedNow = TODAY.atStartOfDay(); // clock이 자정으로 고정
-        assertThat(captor.getValue().getNextRecalcAt()).isEqualTo(expectedNow);
     }
 
     // 생성된 Trip에 reservation이 연결되는지 확인한다.

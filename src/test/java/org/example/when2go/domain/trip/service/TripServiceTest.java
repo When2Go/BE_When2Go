@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.dto.TripDetailResponse;
 import org.example.when2go.domain.trip.dto.TripListResponse;
@@ -29,7 +30,11 @@ class TripServiceTest {
 
     private final TripRepository tripRepository = mock(TripRepository.class);
     private final AppUserRepository appUserRepository = mock(AppUserRepository.class);
-    private final TripService tripService = new TripService(tripRepository, appUserRepository);
+    private final NotificationScheduleCreateService notificationScheduleCreateService =
+            mock(NotificationScheduleCreateService.class);
+    private final TripService tripService = new TripService(
+            tripRepository, appUserRepository, notificationScheduleCreateService
+    );
 
     private AppUser buildUser(Long id) {
         AppUser user = AppUser.builder()

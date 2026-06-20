@@ -10,7 +10,9 @@ import org.example.when2go.domain.notification.dto.PushMessage;
 import org.example.when2go.domain.notification.dto.PushSendResult;
 import org.example.when2go.domain.notification.entity.NotificationSchedule;
 import org.example.when2go.domain.notification.repository.NotificationScheduleRepository;
+import org.example.when2go.global.config.notification.NotificationAsyncConfig;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ public class NotificationDispatcher {
     private final NotificationScheduleRepository notificationScheduleRepository;
     private final ObjectProvider<NotificationPushClient> notificationPushClientProvider;
 
+    @Async(NotificationAsyncConfig.SCHEDULE_PROCESSOR_EXECUTOR)
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void dispatchOne(Long scheduleId, LocalDateTime expirationThreshold) {
         NotificationSchedule schedule = notificationScheduleRepository.findById(scheduleId).orElse(null);

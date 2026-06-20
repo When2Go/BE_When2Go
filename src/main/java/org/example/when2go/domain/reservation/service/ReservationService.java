@@ -2,6 +2,7 @@ package org.example.when2go.domain.reservation.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
 import org.example.when2go.domain.reservation.dto.request.ReservationCreateRequest;
 import org.example.when2go.domain.reservation.dto.request.ReservationUpdateRequest;
 import org.example.when2go.domain.reservation.dto.response.ReservationCreateResponse;
@@ -33,12 +34,11 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ReservationService {
 
-    private static final long INITIAL_RECALC_LEAD_MINUTES = 60;
-
     private final ReservationRepository reservationRepository;
     private final AppUserRepository appUserRepository;
     private final TripRepository tripRepository;
     private final ObjectProvider<GoogleRouteClient> googleRouteClientProvider;
+    private final NotificationScheduleCreateService notificationScheduleCreateService;
     private final Clock clock;
 
     @Transactional
@@ -156,18 +156,11 @@ public class ReservationService {
         }
 
         LocalDateTime arrivalTime = today.atTime(reservation.getArrivalTime());
-        LocalDateTime estimatedDeparture = arrivalTime
+        LocalDateTime departureTime = arrivalTime
                 .minusSeconds(routeResult.totalMinutes() * 60L)
                 .minusMinutes(reservation.getUser().getBufferMinutes());
 
-        LocalDateTime nextRecalcAt = estimatedDeparture.minusMinutes(INITIAL_RECALC_LEAD_MINUTES);
-        LocalDateTime now = LocalDateTime.now(clock);
-        // 도착 시간이 너무 이른 경우 nextRecalcAt이 이미 지났을 수 있어 즉시 재계산 시작
-        if (nextRecalcAt.isBefore(now)) {
-            nextRecalcAt = now;
-        }
-
-        tripRepository.save(Trip.builder()
+        Trip trip = Trip.builder()
                 .user(reservation.getUser())
                 .reservation(reservation)
                 .originName(reservation.getOriginName())
@@ -179,8 +172,11 @@ public class ReservationService {
                 .arrivalTime(arrivalTime)
                 .routeOption(reservation.getRouteOption())
                 .bufferMinutes(reservation.getUser().getBufferMinutes())
-                .nextRecalcAt(nextRecalcAt)
-                .build());
+                .nextRecalcAt(departureTime)
+                .build();
+        trip.markFinalized(departureTime);
+        Trip savedTrip = tripRepository.save(trip);
+        notificationScheduleCreateService.createDepartureSchedules(savedTrip);
     }
 
     private void createTodayTripForNewReservationIfNeeded(Reservation reservation) {
