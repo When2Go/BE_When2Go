@@ -97,6 +97,43 @@ class TripTest {
         assertThat(trip.getStatus()).isEqualTo(TripStatus.SCHEDULED);
     }
 
+    @Test
+    void nearbyRecommendations_초기값은_null이다() {
+        Trip trip = sampleTrip();
+
+        assertThat(trip.getNearbyRecommendations()).isNull();
+    }
+
+    @Test
+    void updateNearbyRecommendations로_JSON을_설정할_수_있다() {
+        Trip trip = sampleTrip();
+
+        trip.updateNearbyRecommendations("[]");
+
+        assertThat(trip.getNearbyRecommendations()).isEqualTo("[]");
+    }
+
+    private Trip sampleTrip() {
+        AppUser user = AppUser.builder()
+                .deviceId("device-abc")
+                .platform(Platform.IOS)
+                .fcmToken("token")
+                .build();
+        return Trip.builder()
+                .user(user)
+                .originName("선릉역")
+                .destName("강남역")
+                .originLat(37.5045)
+                .originLng(127.0498)
+                .destLat(37.4979)
+                .destLng(127.0276)
+                .arrivalTime(LocalDateTime.of(2026, 6, 20, 18, 0))
+                .routeOption(RouteOption.TRANSIT)
+                .bufferMinutes(10)
+                .nextRecalcAt(LocalDateTime.of(2026, 6, 20, 17, 0))
+                .build();
+    }
+
     private Trip validTrip() {
         AppUser user = AppUser.builder()
                 .deviceId("device-id")

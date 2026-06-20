@@ -1,9 +1,9 @@
 package org.example.when2go.domain.trip.dto;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.entity.TripStatus;
-
-import java.time.LocalDateTime;
 
 public record TripDetailResponse(
         Long tripId,
@@ -17,10 +17,11 @@ public record TripDetailResponse(
         Integer bufferMinutes,
         LocalDateTime finalDepartureTime,
         TripStatus status,
-        LocalDateTime updatedAt
+        LocalDateTime updatedAt,
+        List<NearbyRecommendation> nearbyRecommendations
 ) {
 
-    public static TripDetailResponse from(Trip trip) {
+    public static TripDetailResponse from(Trip trip, List<NearbyRecommendation> nearbyRecommendations) {
         return new TripDetailResponse(
                 trip.getId(),
                 trip.getOriginName(),
@@ -33,7 +34,8 @@ public record TripDetailResponse(
                 trip.getBufferMinutes(),
                 trip.getFinalDepartureTime(),
                 trip.getStatus(),
-                trip.getUpdatedAt()
+                trip.getUpdatedAt(),
+                nearbyRecommendations
         );
     }
 }

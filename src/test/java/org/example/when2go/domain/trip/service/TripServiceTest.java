@@ -32,8 +32,10 @@ class TripServiceTest {
     private final AppUserRepository appUserRepository = mock(AppUserRepository.class);
     private final NotificationScheduleCreateService notificationScheduleCreateService =
             mock(NotificationScheduleCreateService.class);
+    private final NearbyRecommendationService nearbyRecommendationService =
+            mock(NearbyRecommendationService.class);
     private final TripService tripService = new TripService(
-            tripRepository, appUserRepository, notificationScheduleCreateService
+            tripRepository, appUserRepository, notificationScheduleCreateService, nearbyRecommendationService
     );
 
     private AppUser buildUser(Long id) {
@@ -105,6 +107,76 @@ class TripServiceTest {
 
         assertThat(result.tripId()).isEqualTo(1L);
         assertThat(result.originName()).isEqualTo("선릉역");
+    }
+
+    @Test
+    void getDetail에_저장된_추천이_있으면_역직렬화하여_응답한다() {
+        AppUser user = buildUser(1L);
+        Trip trip = buildTrip(1L, user);
+        trip.updateNearbyRecommendations(
+                "[{\"name\":\"○○카페\",\"description\":\"분위기 좋은 카페\",\"category\":\"카페\"}]"
+        );
+
+        when(appUserRepository.findByDeviceId("device-abc")).thenReturn(Optional.of(user));
+        when(tripRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(trip));
+
+        TripDetailResponse result = tripService.getDetail("device-abc", 1L);
+
+        assertThat(result.nearbyRecommendations()).hasSize(1);
+        assertThat(result.nearbyRecommendations().get(0).name()).isEqualTo("○○카페");
+    }
+
+    @Test
+    void getDetail에_추천이_null이면_빈_리스트로_응답한다() {
+        AppUser user = buildUser(1L);
+        Trip trip = buildTrip(1L, user);
+        // nearbyRecommendations 미설정 → null
+
+        when(appUserRepository.findByDeviceId("device-abc")).thenReturn(Optional.of(user));
+        when(tripRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(trip));
+
+        TripDetailResponse result = tripService.getDetail("device-abc", 1L);
+
+        assertThat(result.nearbyRecommendations()).isEmpty();
+    }
+
+    @Test
+    void getDetail에_손상된_JSON이_저장되어있으면_빈_리스트로_응답한다() {
+        AppUser user = buildUser(1L);
+        Trip trip = buildTrip(1L, user);
+        trip.updateNearbyRecommendations("not-a-json");
+
+        when(appUserRepository.findByDeviceId("device-abc")).thenReturn(Optional.of(user));
+        when(tripRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(trip));
+
+        TripDetailResponse result = tripService.getDetail("device-abc", 1L);
+
+        assertThat(result.nearbyRecommendations()).isEmpty();
+    }
+
+    @Test
+    void create는_저장_후_추천_서비스를_정확한_인자로_호출한다() {
+        AppUser user = buildUser(1L);
+        when(appUserRepository.findByDeviceId("device-abc")).thenReturn(Optional.of(user));
+        when(tripRepository.save(org.mockito.ArgumentMatchers.any(Trip.class)))
+                .thenAnswer(invocation -> {
+                    Trip t = invocation.getArgument(0);
+                    ReflectionTestUtils.setField(t, "id", 42L);
+                    return t;
+                });
+
+        org.example.when2go.domain.trip.dto.TripCreateRequest request =
+                new org.example.when2go.domain.trip.dto.TripCreateRequest(
+                        "선릉역", 37.5045, 127.0498,
+                        "강남역", 37.4979, 127.0276,
+                        LocalDateTime.of(2026, 6, 20, 18, 0),
+                        10,
+                        600
+                );
+
+        tripService.create("device-abc", request);
+
+        verify(nearbyRecommendationService).populate(42L, "강남역", 37.4979, 127.0276);
     }
 
     @Test
