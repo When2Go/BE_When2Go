@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
 import org.example.when2go.domain.route.enums.RouteOption;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
@@ -27,23 +28,17 @@ public class TripService {
 
     private final TripRepository tripRepository;
     private final AppUserRepository appUserRepository;
-
-    private static final long INITIAL_RECALC_LEAD_MINUTES = 60;
+    private final NotificationScheduleCreateService notificationScheduleCreateService;
 
     @Transactional
     public TripCreateResponse create(String deviceId, TripCreateRequest request) {
         AppUser user = appUserRepository.findByDeviceId(deviceId)
                 .orElseThrow(() -> new DomainException(UserErrorCode.USER_NOT_FOUND));
 
-        // 재계산 시점 =  도착시간 - 소요시간 - 버퍼
-        LocalDateTime estimatedDepartureTime = request.arrivalTime()
+        // 출발시간 = 도착시간 - 소요시간 - 버퍼
+        LocalDateTime departureTime = request.arrivalTime()
                 .minusSeconds(request.durationSeconds())
                 .minusMinutes(request.bufferMinutes());
-
-        LocalDateTime nextRecalcAt = estimatedDepartureTime.minusMinutes(INITIAL_RECALC_LEAD_MINUTES);
-        if (nextRecalcAt.isBefore(LocalDateTime.now())) {
-            nextRecalcAt = LocalDateTime.now();
-        }
 
         Trip trip = Trip.builder()
                 .user(user)
@@ -56,10 +51,13 @@ public class TripService {
                 .arrivalTime(request.arrivalTime())
                 .routeOption(RouteOption.TRANSIT) // routeOption TRANSIT으로 고정
                 .bufferMinutes(request.bufferMinutes())
-                .nextRecalcAt(nextRecalcAt)
+                .nextRecalcAt(departureTime)
                 .build();
+        trip.markFinalized(departureTime);
 
-        return TripCreateResponse.from(tripRepository.save(trip));
+        Trip saved = tripRepository.save(trip);
+        notificationScheduleCreateService.createDepartureSchedules(saved);
+        return TripCreateResponse.from(saved);
     }
 
     @Transactional(readOnly = true)
