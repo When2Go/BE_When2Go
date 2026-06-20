@@ -2,11 +2,14 @@ package org.example.when2go.domain.trip.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.notification.service.schedule.NotificationScheduleCreateService;
 import org.example.when2go.domain.route.enums.RouteOption;
+import org.example.when2go.domain.trip.dto.NearbyRecommendation;
 import org.example.when2go.domain.trip.dto.TripCreateRequest;
 import org.example.when2go.domain.trip.dto.TripCreateResponse;
 import org.example.when2go.domain.trip.dto.TripDetailResponse;
@@ -21,7 +24,11 @@ import org.example.when2go.domain.user.repository.AppUserRepository;
 import org.example.when2go.global.error.DomainException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TripService {
@@ -29,6 +36,11 @@ public class TripService {
     private final TripRepository tripRepository;
     private final AppUserRepository appUserRepository;
     private final NotificationScheduleCreateService notificationScheduleCreateService;
+    private final NearbyRecommendationService nearbyRecommendationService;
+
+    private final ObjectMapper objectMapper = JsonMapper.builder()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
 
     @Transactional
     public TripCreateResponse create(String deviceId, TripCreateRequest request) {
@@ -57,6 +69,12 @@ public class TripService {
 
         Trip saved = tripRepository.save(trip);
         notificationScheduleCreateService.createDepartureSchedules(saved);
+        nearbyRecommendationService.populate(
+                saved.getId(),
+                saved.getDestName(),
+                saved.getDestLat(),
+                saved.getDestLng()
+        );
         return TripCreateResponse.from(saved);
     }
 
@@ -82,7 +100,7 @@ public class TripService {
         Trip trip = tripRepository.findByIdAndUserId(tripId, user.getId())
                 .orElseThrow(() -> new DomainException(TripErrorCode.TRIP_NOT_FOUND));
 
-        return TripDetailResponse.from(trip);
+        return TripDetailResponse.from(trip, parseRecommendations(trip.getNearbyRecommendations(), tripId));
     }
 
     @Transactional
@@ -94,5 +112,22 @@ public class TripService {
                 .orElseThrow(() -> new DomainException(TripErrorCode.TRIP_NOT_FOUND));
 
         tripRepository.delete(trip);
+    }
+
+    // 저장된 JSON이 null이거나 손상되었으면 빈 리스트로 fallback (조회 자체는 항상 성공)
+    private List<NearbyRecommendation> parseRecommendations(String json, Long tripId) {
+        if (json == null || json.isBlank()) {
+            return Collections.emptyList();
+        }
+        try {
+            return objectMapper.readValue(
+                    json,
+                    objectMapper.getTypeFactory()
+                            .constructCollectionType(List.class, NearbyRecommendation.class)
+            );
+        } catch (RuntimeException e) {
+            log.warn("[Nearby] 저장된 JSON 역직렬화 실패. tripId={}, body={}", tripId, json, e);
+            return Collections.emptyList();
+        }
     }
 }
