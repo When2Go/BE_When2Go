@@ -35,8 +35,10 @@ class TripServiceTest {
     private final NotificationScheduleCreateService notificationScheduleCreateService =
             mock(NotificationScheduleCreateService.class);
     private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
+    private final jakarta.persistence.EntityManager entityManager =
+            mock(jakarta.persistence.EntityManager.class);
     private final TripService tripService = new TripService(
-            tripRepository, appUserRepository, notificationScheduleCreateService, eventPublisher
+            tripRepository, appUserRepository, notificationScheduleCreateService, eventPublisher, entityManager
     );
 
     private AppUser buildUser(Long id) {
