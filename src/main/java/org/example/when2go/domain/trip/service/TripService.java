@@ -1,5 +1,6 @@
 package org.example.when2go.domain.trip.service;
 
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -39,6 +40,7 @@ public class TripService {
     private final AppUserRepository appUserRepository;
     private final NotificationScheduleCreateService notificationScheduleCreateService;
     private final ApplicationEventPublisher eventPublisher;
+    private final EntityManager entityManager;
 
     private final ObjectMapper objectMapper = JsonMapper.builder()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -114,6 +116,10 @@ public class TripService {
                 .orElseThrow(() -> new DomainException(TripErrorCode.TRIP_NOT_FOUND));
 
         tripRepository.delete(trip);
+        // DB FK 의 ON DELETE CASCADE 로 자식(notification_schedules) 이 함께 삭제되므로,
+        // 영속성 컨텍스트와 DB 상태를 동기화한다.
+        entityManager.flush();
+        entityManager.clear();
     }
 
     // 저장된 JSON이 null이거나 손상되었으면 빈 리스트로 fallback (조회 자체는 항상 성공)
