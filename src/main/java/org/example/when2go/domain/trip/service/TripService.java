@@ -17,11 +17,13 @@ import org.example.when2go.domain.trip.dto.TripListResponse;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.entity.TripStatus;
 import org.example.when2go.domain.trip.error.TripErrorCode;
+import org.example.when2go.domain.trip.event.TripCreatedEvent;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.domain.user.error.UserErrorCode;
 import org.example.when2go.domain.user.repository.AppUserRepository;
 import org.example.when2go.global.error.DomainException;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.DeserializationFeature;
@@ -36,7 +38,7 @@ public class TripService {
     private final TripRepository tripRepository;
     private final AppUserRepository appUserRepository;
     private final NotificationScheduleCreateService notificationScheduleCreateService;
-    private final NearbyRecommendationService nearbyRecommendationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     private final ObjectMapper objectMapper = JsonMapper.builder()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
@@ -69,12 +71,12 @@ public class TripService {
 
         Trip saved = tripRepository.save(trip);
         notificationScheduleCreateService.createDepartureSchedules(saved);
-        nearbyRecommendationService.populate(
+        eventPublisher.publishEvent(new TripCreatedEvent(
                 saved.getId(),
                 saved.getDestName(),
                 saved.getDestLat(),
                 saved.getDestLng()
-        );
+        ));
         return TripCreateResponse.from(saved);
     }
 

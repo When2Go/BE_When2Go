@@ -17,6 +17,7 @@ import org.example.when2go.domain.trip.dto.TripListResponse;
 import org.example.when2go.domain.trip.entity.Trip;
 import org.example.when2go.domain.trip.entity.TripStatus;
 import org.example.when2go.domain.trip.error.TripErrorCode;
+import org.example.when2go.domain.trip.event.TripCreatedEvent;
 import org.example.when2go.domain.trip.repository.TripRepository;
 import org.example.when2go.domain.user.entity.AppUser;
 import org.example.when2go.domain.user.entity.Platform;
@@ -24,6 +25,7 @@ import org.example.when2go.domain.user.error.UserErrorCode;
 import org.example.when2go.domain.user.repository.AppUserRepository;
 import org.example.when2go.global.error.DomainException;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class TripServiceTest {
@@ -32,10 +34,9 @@ class TripServiceTest {
     private final AppUserRepository appUserRepository = mock(AppUserRepository.class);
     private final NotificationScheduleCreateService notificationScheduleCreateService =
             mock(NotificationScheduleCreateService.class);
-    private final NearbyRecommendationService nearbyRecommendationService =
-            mock(NearbyRecommendationService.class);
+    private final ApplicationEventPublisher eventPublisher = mock(ApplicationEventPublisher.class);
     private final TripService tripService = new TripService(
-            tripRepository, appUserRepository, notificationScheduleCreateService, nearbyRecommendationService
+            tripRepository, appUserRepository, notificationScheduleCreateService, eventPublisher
     );
 
     private AppUser buildUser(Long id) {
@@ -155,7 +156,7 @@ class TripServiceTest {
     }
 
     @Test
-    void create는_저장_후_추천_서비스를_정확한_인자로_호출한다() {
+    void create는_저장_후_TripCreatedEvent를_발행한다() {
         AppUser user = buildUser(1L);
         when(appUserRepository.findByDeviceId("device-abc")).thenReturn(Optional.of(user));
         when(tripRepository.save(org.mockito.ArgumentMatchers.any(Trip.class)))
@@ -176,7 +177,9 @@ class TripServiceTest {
 
         tripService.create("device-abc", request);
 
-        verify(nearbyRecommendationService).populate(42L, "강남역", 37.4979, 127.0276);
+        verify(eventPublisher).publishEvent(
+                new TripCreatedEvent(42L, "강남역", 37.4979, 127.0276)
+        );
     }
 
     @Test
