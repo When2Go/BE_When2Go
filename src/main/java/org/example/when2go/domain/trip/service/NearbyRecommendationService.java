@@ -5,13 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.trip.client.GeminiNearbyRecommendClient;
 import org.example.when2go.domain.trip.dto.NearbyRecommendation;
-import org.example.when2go.domain.trip.entity.Trip;
-import org.example.when2go.domain.trip.repository.TripRepository;
-import org.example.when2go.global.config.trip.TripAsyncConfig;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
@@ -23,19 +17,12 @@ public class NearbyRecommendationService {
     private static final String EMPTY_JSON_ARRAY = "[]";
 
     private final GeminiNearbyRecommendClient client;
-    private final TripRepository tripRepository;
+    private final NearbyRecommendationWriter writer;
 
     private final ObjectMapper objectMapper = JsonMapper.builder().build();
 
-    @Async(TripAsyncConfig.NEARBY_RECOMMEND_EXECUTOR)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    // 외부 API 호출은 트랜잭션 밖에서 수행하고, DB 업데이트만 별도 컴포넌트의 짧은 트랜잭션으로 위임한다.
     public void populate(Long tripId, String destName, Double destLat, Double destLng) {
-        Trip trip = tripRepository.findById(tripId).orElse(null);
-        if (trip == null) {
-            log.warn("[Nearby] populate skipped — trip not found. tripId={}", tripId);
-            return;
-        }
-
         List<NearbyRecommendation> recommendations = client.recommend(destName, destLat, destLng);
 
         String json;
@@ -46,6 +33,6 @@ public class NearbyRecommendationService {
             json = EMPTY_JSON_ARRAY;
         }
 
-        trip.updateNearbyRecommendations(json);
+        writer.save(tripId, json);
     }
 }
