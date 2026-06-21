@@ -40,10 +40,13 @@ public class GeminiNearbyRecommendClient {
             이 목적지 근처(도보 10분 이내)에서 약속 전 잠시 시간을 보내기 좋은,
             실제로 존재할 가능성이 높은 장소 3개를 추천하세요.
             카페/공원/서점/전시공간 등 가볍게 머물 수 있는 곳 위주로 골라주세요.
+            description은 문장형 설명이 아니라 자연스러운 한 줄 명사구로 작성하세요.
+            "~입니다", "~합니다", "~좋습니다"처럼 종결 어미로 끝내지 말고 반드시 명사로 끝내세요.
+            예: "조용하게 공부하거나 잠시 책을 읽기 좋은 스터디 카페"
 
             JSON 배열만 출력하세요 (코드블록, 설명 없이):
             [
-              {"name": "장소명", "description": "한 줄 설명", "category": "카페|공원|서점|전시|기타"}
+              {"name": "장소명", "description": "명사로 끝나는 한 줄 설명", "category": "카페|공원|서점|전시|기타"}
             ]""";
 
     public List<NearbyRecommendation> recommend(String destName, Double destLat, Double destLng) {
