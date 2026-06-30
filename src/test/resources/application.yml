@@ -2,3 +2,8 @@ google:
   routes:
     api-key: test-key
     base-url: https://routes.googleapis.com
+
+gemini:
+  api-key: test-key
+  base-url: https://generativelanguage.googleapis.com/v1beta
+  model: test-model
