@@ -36,7 +36,6 @@ public abstract class AbstractOutboxConcurrencyIT {
         registry.add("spring.data.redis.host", () -> "localhost");
         registry.add("spring.data.redis.port", () -> "6379");
         registry.add("notification.fcm.enabled", () -> "false");
-        registry.add("notification.sqs.enabled", () -> "false");
         registry.add("google.routes.api-key", () -> "test-key");
         registry.add("google.routes.base-url", () -> "https://routes.googleapis.com");
     }

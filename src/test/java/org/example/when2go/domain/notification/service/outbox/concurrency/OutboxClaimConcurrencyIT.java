@@ -46,7 +46,6 @@ import org.springframework.transaction.support.TransactionTemplate;
  *  C. FOR UPDATE SKIP LOCKED  : 운영 코드. 중복 0 + 워커가 서로 다른 row 를 잡아 병렬 처리한다.
  */
 @DisplayName("Outbox claim 동시성 비교 (SKIP LOCKED)")
-@org.junit.jupiter.api.Disabled("release 단순화로 비활성화 - outbox 흐름 제거됨")
 class OutboxClaimConcurrencyIT extends AbstractOutboxConcurrencyIT {
 
     private static final int WORKER_COUNT = 15;
