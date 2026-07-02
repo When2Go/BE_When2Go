@@ -17,7 +17,6 @@ public class NotificationProperties {
     @Valid
     private Schedule schedule = new Schedule();
     private Outbox outbox = new Outbox();
-    private Sqs sqs = new Sqs();
     private Fcm fcm = new Fcm();
 
     @Getter
@@ -36,20 +35,10 @@ public class NotificationProperties {
     public static class Outbox {
 
         private int claimSize = 500;
-        private int publishBatchSize = 10;
         private int maxRetry = 3;
-        private long fixedDelayMillis = 60_000L;
         private long recoveryFixedDelayMillis = 60_000L;
         private Duration stuckTimeout = Duration.ofMinutes(5);
-    }
-
-    @Getter
-    @Setter
-    public static class Sqs {
-
-        private boolean enabled = false;
-        private String region = "ap-northeast-2";
-        private String queueUrl;
+        private Duration staleTimeout = Duration.ofMinutes(3);
     }
 
     @Getter
