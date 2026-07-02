@@ -13,7 +13,7 @@ public class NotificationCleanupService {
 
     private static final List<NotificationOutboxStatus> DELETABLE_OUTBOX_STATUSES = List.of(
             NotificationOutboxStatus.PENDING,
-            NotificationOutboxStatus.PUBLISHED,
+            NotificationOutboxStatus.SENT,
             NotificationOutboxStatus.FAILED
     );
 

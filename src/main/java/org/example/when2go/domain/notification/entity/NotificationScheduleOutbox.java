@@ -83,8 +83,8 @@ public class NotificationScheduleOutbox extends BaseEntity {
     @Column(name = "processing_started_at")
     private LocalDateTime processingStartedAt;
 
-    @Column(name = "published_at")
-    private LocalDateTime publishedAt;
+    @Column(name = "sent_at")
+    private LocalDateTime sentAt;
 
     @Builder
     private NotificationScheduleOutbox(
@@ -98,7 +98,7 @@ public class NotificationScheduleOutbox extends BaseEntity {
             Integer retryCount,
             String dedupKey,
             LocalDateTime processingStartedAt,
-            LocalDateTime publishedAt
+            LocalDateTime sentAt
     ) {
         this.schedule = Objects.requireNonNull(schedule, "schedule must not be null");
         this.user = Objects.requireNonNull(user, "user must not be null");
@@ -110,7 +110,7 @@ public class NotificationScheduleOutbox extends BaseEntity {
         this.retryCount = retryCount == null ? DEFAULT_RETRY_COUNT : retryCount;
         this.dedupKey = Objects.requireNonNull(dedupKey, "dedupKey must not be null");
         this.processingStartedAt = processingStartedAt;
-        this.publishedAt = publishedAt;
+        this.sentAt = sentAt;
     }
 
     public void startProcessing(LocalDateTime now) {
@@ -118,10 +118,10 @@ public class NotificationScheduleOutbox extends BaseEntity {
         this.processingStartedAt = Objects.requireNonNull(now, "now must not be null");
     }
 
-    public void markPublished(LocalDateTime now) {
-        this.status = NotificationOutboxStatus.PUBLISHED;
+    public void markSent(LocalDateTime now) {
+        this.status = NotificationOutboxStatus.SENT;
         this.processingStartedAt = null;
-        this.publishedAt = Objects.requireNonNull(now, "now must not be null");
+        this.sentAt = Objects.requireNonNull(now, "now must not be null");
     }
 
     public void markRetryableFailure() {

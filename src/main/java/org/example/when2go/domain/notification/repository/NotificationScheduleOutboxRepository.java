@@ -60,13 +60,13 @@ public interface NotificationScheduleOutboxRepository extends JpaRepository<Noti
             UPDATE NotificationScheduleOutbox o
             SET o.status = :status,
                 o.processingStartedAt = NULL,
-                o.publishedAt = :publishedAt
+                o.sentAt = :sentAt
             WHERE o.id IN :ids
             """)
-    int markPublished(
+    int markSent(
             @Param("ids") Collection<Long> ids,
             @Param("status") NotificationOutboxStatus status,
-            @Param("publishedAt") LocalDateTime publishedAt
+            @Param("sentAt") LocalDateTime sentAt
     );
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
@@ -94,19 +94,46 @@ public interface NotificationScheduleOutboxRepository extends JpaRepository<Noti
             @Param("status") NotificationOutboxStatus status
     );
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("""
-            UPDATE NotificationScheduleOutbox o
-            SET o.status = :targetStatus,
-                o.processingStartedAt = NULL
-            WHERE o.status = :sourceStatus
-              AND o.processingStartedAt < :threshold
-            """)
-    int resetStuckProcessing(
-            @Param("sourceStatus") NotificationOutboxStatus sourceStatus,
-            @Param("targetStatus") NotificationOutboxStatus targetStatus,
-            @Param("threshold") LocalDateTime threshold
+    @Query(
+            value = """
+                    SELECT id
+                    FROM notification_schedule_outbox
+                    WHERE status = 'PROCESSING'
+                      AND processing_started_at < :threshold
+                    ORDER BY processing_started_at ASC, id ASC
+                    LIMIT :limit
+                    FOR UPDATE SKIP LOCKED
+                    """,
+            nativeQuery = true
+    )
+    List<Long> claimStuckProcessingIds(
+            @Param("threshold") LocalDateTime threshold,
+            @Param("limit") int limit
     );
+
+    @Query(
+            value = """
+                    SELECT id
+                    FROM notification_schedule_outbox
+                    WHERE status = 'PENDING'
+                      AND created_at < :threshold
+                    ORDER BY created_at ASC, id ASC
+                    LIMIT :limit
+                    FOR UPDATE SKIP LOCKED
+                    """,
+            nativeQuery = true
+    )
+    List<Long> claimStalePendingIds(
+            @Param("threshold") LocalDateTime threshold,
+            @Param("limit") int limit
+    );
+
+    @Query("""
+            SELECT o
+            FROM NotificationScheduleOutbox o
+            WHERE o.id IN :ids
+            """)
+    List<NotificationScheduleOutbox> findAllByIdIn(@Param("ids") Collection<Long> ids);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("""
