@@ -20,6 +20,8 @@ spring:
 
 server:
   tomcat:
+    mbeanregistry:
+      enabled: true
     threads:
       max: 20
     accept-count: 10
