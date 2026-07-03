@@ -1,16 +1,17 @@
 services:
   app:
-    image: ${APP_IMAGE}
+    image: ${APP_IMAGE:-when2go-app:local}
+    build: .
     container_name: when2go-app
     ports:
       - "8080:8080"
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-prod}
       TZ: ${TZ:-Asia/Seoul}
       JAVA_TOOL_OPTIONS: ${JAVA_TOOL_OPTIONS:--Duser.timezone=Asia/Seoul}
-      DB_URL: ${DB_URL}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PWD: ${DB_PWD}
+      DB_URL: ${DB_URL:-}
+      DB_USERNAME: ${DB_USERNAME:-}
+      DB_PWD: ${DB_PWD:-}
       GOOGLE_ROUTES_API_KEY: ${GOOGLE_ROUTES_API_KEY}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_BASE_URL: ${GEMINI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta}
@@ -22,9 +23,42 @@ services:
     depends_on:
       when2go-redis:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
+      wiremock:
+        condition: service_started
     networks:
       - when2go-net
     restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    container_name: when2go-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: when2go
+      MYSQL_USER: when2go
+      MYSQL_PASSWORD: when2go
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      retries: 20
+    networks: [ when2go-net ]
+
+  wiremock:
+    image: wiremock/wiremock:3.9.1
+    container_name: when2go-wiremock
+    command: ["--port", "8080", "--verbose"]
+    volumes: [ "./docker/wiremock/mappings:/home/wiremock/mappings:ro" ]
+    networks: [ when2go-net ]
+
+  k6:
+    image: grafana/k6:0.53.0
+    container_name: when2go-k6
+    profiles: [ "loadtest" ]
+    volumes: [ "./docker/k6:/scripts:ro" ]
+    environment: { BASE_URL: "http://app:8080" }
+    networks: [ when2go-net ]
 
   when2go-redis:
     image: redis:7-alpine
