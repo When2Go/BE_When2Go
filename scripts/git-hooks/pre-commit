@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+BLUE=$'\033[0;34m'
+GREEN=$'\033[0;32m'
+RED=$'\033[0;31m'
+NC=$'\033[0m'
+
+cd "$REPO_ROOT"
+
+echo "${BLUE}[pre-commit] 1/2 Spotless format check${NC}"
+if ! ./gradlew spotlessCheck --quiet; then
+  echo "${RED}[pre-commit] Spotless check failed.${NC}"
+  echo "  run: ./gradlew spotlessApply, then recommit"
+  exit 1
+fi
+
+echo "${BLUE}[pre-commit] 2/2 secret scan${NC}"
+if ! bash "$HOOK_DIR/lib/secret-scan.sh"; then
+  exit 1
+fi
+
+echo "${GREEN}[pre-commit] all checks passed${NC}"
+exit 0
