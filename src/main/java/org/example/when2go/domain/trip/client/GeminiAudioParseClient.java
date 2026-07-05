@@ -5,11 +5,14 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.example.when2go.domain.trip.dto.AudioParseRequest;
 import org.example.when2go.domain.trip.dto.NavigationParseResponse;
 import org.example.when2go.domain.trip.error.NavigationParseErrorCode;
 import org.example.when2go.global.error.DomainException;
@@ -50,16 +53,20 @@ public class GeminiAudioParseClient {
     // 한국 사용자의 음성을 해석하므로 날짜 계산 기준은 항상 KST로 고정한다.
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
-    private static final String PROMPT_TEMPLATE = """
-            이 음성은 길찾기 앱에 입력된 사용자의 음성 명령입니다.
-            현재 시각은 {{NOW}} 입니다. 이 시각을 기준으로 날짜를 계산하세요.
-            음성에서 다음 3가지 값을 추출해서 JSON 형식으로만 출력하세요. 설명이나 코드블록 없이 JSON만.
+    // flash-lite 모델이 가끔 "null" 문자열로 주는 경우를 정규화한다.
+    private static final String NULL_LITERAL = "null";
 
-            {
-              "start_location": "출발지 (언급이 없으면 null)",
-              "end_location": "도착지",
-              "appointment_time": "yyyy-MM-dd HH:mm 형식의 날짜+시각 (24시간제)"
-            }
+    private static final String PROMPT_TEMPLATE = """
+            다음은 길찾기 앱에 입력된 사용자의 음성 명령 {{COUNT}}개입니다.
+            현재 시각은 {{NOW}} 입니다. 이 시각을 기준으로 날짜를 계산하세요.
+            입력된 순서대로 id 0, 1, 2, ... 를 부여하고, 각 음성에서 출발지/도착지/약속시간을 추출하세요.
+
+            다음 형식의 JSON 배열로만 출력하세요. 설명, 코드블록 없이 JSON 배열만.
+
+            [
+              {"id": 0, "start_location": "...", "end_location": "...", "appointment_time": "yyyy-MM-dd HH:mm"},
+              {"id": 1, "start_location": "...", "end_location": "...", "appointment_time": "yyyy-MM-dd HH:mm"}
+            ]
 
             [추출 규칙]
 
@@ -87,36 +94,15 @@ public class GeminiAudioParseClient {
                - "오늘 중요한 회의가 있어서", "친구를 만나야 해서" 같은 부가적인 맥락은 무시
                - 위 3가지 값만 추출
                - 음성이 명령어가 아니거나 정보가 부족하면 해당 필드를 null로
+               - 반드시 입력 순서대로 id 0,1,2,... 를 매기고 입력 개수와 동일한 개수의 객체를 반환
+               - null 은 JSON null 로 출력. 문자열 "null" 로 쓰지 말 것""";
 
-            [예시] (아래 예시는 현재 시각이 "2026-06-19 10:00 (금)" 라고 가정한 경우입니다)
-            음성: "오늘 중요한 회의가 있어서 오후 2시까지 강남역에 가야해"
-            출력: {"start_location": null, "end_location": "강남역", "appointment_time": "2026-06-19 14:00"}
+    public Map<Long, NavigationParseResponse> parseBatch(List<AudioParseRequest> requests) {
+        if (requests == null || requests.isEmpty()) {
+            return Map.of();
+        }
 
-            음성: "집에서 출발해서 9시 30분까지 회사 가야해"
-            출력: {"start_location": "집", "end_location": "회사", "appointment_time": "2026-06-20 09:30"}
-
-            음성: "홍대입구역까지 어떻게 가지"
-            출력: {"start_location": null, "end_location": "홍대입구역", "appointment_time": null}""";
-
-    public NavigationParseResponse parse(byte[] audioBytes, String mimeType) {
-        String base64Audio = Base64.getEncoder().encodeToString(audioBytes);
-
-        String prompt = PROMPT_TEMPLATE.replace("{{NOW}}", currentTimeText());
-
-        Map<String, Object> requestBody = Map.of(
-                "contents", List.of(Map.of(
-                        "parts", List.of(
-                                Map.of("inline_data", Map.of(
-                                        "mime_type", mimeType,
-                                        "data", base64Audio
-                                )),
-                                Map.of("text", prompt)
-                        )
-                )),
-                "generationConfig", Map.of(
-                        "response_mime_type", "application/json"
-                )
-        );
+        Map<String, Object> requestBody = buildRequestBody(requests);
 
         String body;
         try {
@@ -127,11 +113,31 @@ public class GeminiAudioParseClient {
                     .bodyToMono(String.class)
                     .block();
         } catch (RuntimeException e) {
-            log.error("[Gemini] 호출 실패", e);
+            log.error("[Gemini] 배치 호출 실패. size={}", requests.size(), e);
             throw new DomainException(NavigationParseErrorCode.PARSE_FAILED, e);
         }
 
-        return toResponse(body);
+        return toResponseMap(body, requests);
+    }
+
+    private Map<String, Object> buildRequestBody(List<AudioParseRequest> requests) {
+        List<Map<String, Object>> parts = new ArrayList<>(requests.size() + 1);
+        for (AudioParseRequest req : requests) {
+            String base64 = Base64.getEncoder().encodeToString(req.audioBytes());
+            parts.add(Map.of("inline_data", Map.of(
+                    "mime_type", req.mimeType(),
+                    "data", base64
+            )));
+        }
+        String prompt = PROMPT_TEMPLATE
+                .replace("{{COUNT}}", String.valueOf(requests.size()))
+                .replace("{{NOW}}", currentTimeText());
+        parts.add(Map.of("text", prompt));
+
+        return Map.of(
+                "contents", List.of(Map.of("parts", parts)),
+                "generationConfig", Map.of("response_mime_type", "application/json")
+        );
     }
 
     // 한국 시각(KST) 기준 현재 시각 문자열. LLM의 "오늘/내일" 날짜 계산 기준이 된다.
@@ -139,14 +145,14 @@ public class GeminiAudioParseClient {
         return LocalDateTime.now(clock.withZone(KST)).format(NOW_FORMATTER);
     }
 
-    // 테스트에서 직접 호출하기 위해 package-private. Gemini 응답 본문(JSON 문자열)을 파싱한다.
-    NavigationParseResponse toResponse(String body) {
+    // 테스트에서 직접 호출하기 위해 package-private.
+    // Gemini 응답 본문(JSON 문자열)을 파싱해 요청 순서(0,1,2,...)의 id를 원래 요청 id로 다시 매핑한다.
+    Map<Long, NavigationParseResponse> toResponseMap(String body, List<AudioParseRequest> requests) {
         if (body == null || body.isBlank()) {
             log.error("[Gemini] 응답 본문이 비어있음");
             throw new DomainException(NavigationParseErrorCode.PARSE_FAILED);
         }
 
-        // Gemini 응답에서 candidates[0].content.parts[0].text(= 우리가 시킨 JSON 문자열)를 꺼낸다.
         String resultJson;
         try {
             GeminiResponse response = objectMapper.readValue(body, GeminiResponse.class);
@@ -161,17 +167,39 @@ public class GeminiAudioParseClient {
             throw new DomainException(NavigationParseErrorCode.PARSE_FAILED);
         }
 
+        List<BatchItem> items;
         try {
-            ParsedFields fields = objectMapper.readValue(resultJson, ParsedFields.class);
-            return new NavigationParseResponse(
-                    fields.startLocation(),
-                    fields.endLocation(),
-                    fields.appointmentTime()
+            items = objectMapper.readValue(
+                    resultJson,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, BatchItem.class)
             );
         } catch (RuntimeException e) {
             log.error("[Gemini] 결과 JSON 파싱 실패. text: {}", resultJson, e);
             throw new DomainException(NavigationParseErrorCode.PARSE_FAILED, e);
         }
+
+        // 모델이 매긴 id(0,1,2,...)를 원래 요청 id(=호출자 입장의 식별자)로 변환한다.
+        // 모델이 id를 빠뜨리거나 범위를 벗어나면 해당 항목은 Map에 안 들어가고, 호출 측(Processor)이 누락 처리한다.
+        Map<Long, NavigationParseResponse> result = new LinkedHashMap<>(items.size());
+        for (BatchItem item : items) {
+            if (item.id() == null) continue;
+            int idx = item.id().intValue();
+            if (idx < 0 || idx >= requests.size()) continue;
+            Long originalId = requests.get(idx).id();
+            result.put(originalId, new NavigationParseResponse(
+                    normalize(item.startLocation()),
+                    normalize(item.endLocation()),
+                    normalize(item.appointmentTime())
+            ));
+        }
+        return result;
+    }
+
+    // 모델이 가끔 문자열 "null"을 그대로 주는 경우가 있어 정규화한다.
+    private String normalize(String value) {
+        if (value == null) return null;
+        if (NULL_LITERAL.equalsIgnoreCase(value)) return null;
+        return value;
     }
 
     private String extractText(GeminiResponse response) {
@@ -202,8 +230,9 @@ public class GeminiAudioParseClient {
     record Part(String text) {
     }
 
-    // 모델이 text 안에 넣어주는 최종 결과 JSON
-    record ParsedFields(
+    // 모델이 text 안에 넣어주는 배열의 한 요소
+    record BatchItem(
+            @JsonProperty("id") Long id,
             @JsonProperty("start_location") String startLocation,
             @JsonProperty("end_location") String endLocation,
             @JsonProperty("appointment_time") String appointmentTime

@@ -6,7 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.example.when2go.domain.trip.client.GeminiAudioParseClient;
+import java.util.concurrent.CompletableFuture;
+import org.example.when2go.domain.trip.dto.AudioParseRequest;
 import org.example.when2go.domain.trip.dto.NavigationParseResponse;
 import org.example.when2go.global.error.DomainException;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ import org.springframework.mock.web.MockMultipartFile;
 class NavigationParseServiceTest {
 
     @Mock
-    private GeminiAudioParseClient geminiAudioParseClient;
+    private NavigationParseBatchProcessor processor;
 
     @InjectMocks
     private NavigationParseService navigationParseService;
@@ -46,26 +47,40 @@ class NavigationParseServiceTest {
     @Test
     void m4a_확장자는_audio_mp4로_매핑되어_전달된다() {
         MockMultipartFile m4a = new MockMultipartFile("audio", "voice.m4a", "audio/mp4", new byte[]{1, 2, 3});
-        when(geminiAudioParseClient.parse(any(), any()))
-                .thenReturn(new NavigationParseResponse(null, "강남역", "2026-06-20 14:00"));
+        when(processor.submit(any()))
+                .thenReturn(CompletableFuture.completedFuture(
+                        new NavigationParseResponse(null, "강남역", "2026-06-20 14:00")));
 
         navigationParseService.parse(m4a);
 
-        ArgumentCaptor<String> mimeCaptor = ArgumentCaptor.forClass(String.class);
-        verify(geminiAudioParseClient).parse(any(), mimeCaptor.capture());
-        assertThat(mimeCaptor.getValue()).isEqualTo("audio/mp4");
+        ArgumentCaptor<AudioParseRequest> captor = ArgumentCaptor.forClass(AudioParseRequest.class);
+        verify(processor).submit(captor.capture());
+        assertThat(captor.getValue().mimeType()).isEqualTo("audio/mp4");
+        assertThat(captor.getValue().audioBytes()).isEqualTo(new byte[]{1, 2, 3});
     }
 
     @Test
     void 매핑에_없는_확장자는_audio_확장자_형태로_전달된다() {
         MockMultipartFile opus = new MockMultipartFile("audio", "voice.opus", "audio/opus", new byte[]{1, 2, 3});
-        when(geminiAudioParseClient.parse(any(), any()))
-                .thenReturn(new NavigationParseResponse(null, "강남역", null));
+        when(processor.submit(any()))
+                .thenReturn(CompletableFuture.completedFuture(
+                        new NavigationParseResponse(null, "강남역", null)));
 
         navigationParseService.parse(opus);
 
-        ArgumentCaptor<String> mimeCaptor = ArgumentCaptor.forClass(String.class);
-        verify(geminiAudioParseClient).parse(any(), mimeCaptor.capture());
-        assertThat(mimeCaptor.getValue()).isEqualTo("audio/opus");
+        ArgumentCaptor<AudioParseRequest> captor = ArgumentCaptor.forClass(AudioParseRequest.class);
+        verify(processor).submit(captor.capture());
+        assertThat(captor.getValue().mimeType()).isEqualTo("audio/opus");
+    }
+
+    @Test
+    void Processor가_실패하면_DomainException으로_변환된다() {
+        MockMultipartFile mp3 = new MockMultipartFile("audio", "voice.mp3", "audio/mp3", new byte[]{1, 2, 3});
+        CompletableFuture<NavigationParseResponse> failed = new CompletableFuture<>();
+        failed.completeExceptionally(new IllegalStateException("처리 대기열이 가득 찼습니다"));
+        when(processor.submit(any())).thenReturn(failed);
+
+        assertThatThrownBy(() -> navigationParseService.parse(mp3))
+                .isInstanceOf(DomainException.class);
     }
 }
