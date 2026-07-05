@@ -18,6 +18,7 @@ import org.example.when2go.domain.trip.dto.TripCreateResponse;
 import org.example.when2go.domain.trip.dto.TripDetailResponse;
 import org.example.when2go.domain.trip.dto.TripListResponse;
 import org.example.when2go.domain.trip.entity.TripStatus;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -72,7 +73,7 @@ public interface TripControllerApi {
                     )
             )
     })
-    org.example.when2go.global.response.ApiResponse<NavigationParseResponse> parse(
+    DeferredResult<org.example.when2go.global.response.ApiResponse<NavigationParseResponse>> parse(
             @Parameter(
                     description = "음성 파일 (mp3, wav, m4a, aac, flac, ogg)",
                     required = true
