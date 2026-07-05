@@ -25,6 +25,6 @@ spring:
 
 notification:
   fcm:
-    enabled: ${NOTIFICATION_FCM_ENABLED:false}
+    enabled: ${NOTIFICATION_FCM_ENABLED:true}
     credentials-path: ${FCM_CREDENTIALS_PATH:}
     credentials-base64: ${FCM_CREDENTIALS_BASE64:}
