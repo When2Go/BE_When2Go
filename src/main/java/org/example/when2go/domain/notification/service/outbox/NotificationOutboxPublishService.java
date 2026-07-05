@@ -1,101 +1,76 @@
 package org.example.when2go.domain.notification.service.outbox;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.example.when2go.global.config.notification.NotificationProperties;
-import org.example.when2go.domain.notification.client.NotificationSqsClient;
-import org.example.when2go.domain.notification.dto.NotificationSqsBatchResult;
-import org.example.when2go.domain.notification.dto.NotificationSqsPayload;
+import org.example.when2go.domain.notification.client.NotificationPushClient;
+import org.example.when2go.domain.notification.dto.PushMessage;
+import org.example.when2go.domain.notification.dto.PushSendResult;
 import org.example.when2go.domain.notification.entity.NotificationScheduleOutbox;
+import org.example.when2go.global.config.notification.NotificationProperties;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.stereotype.Service;
 
-// release 단순화로 빈 등록 해제됨. 코드 보존용.
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class NotificationOutboxPublishService {
 
     private final NotificationOutboxClaimService notificationOutboxClaimService;
     private final NotificationOutboxStatusService notificationOutboxStatusService;
-    private final NotificationSqsClient notificationSqsClient;
+    private final ObjectProvider<NotificationPushClient> notificationPushClientProvider;
     private final NotificationProperties notificationProperties;
 
-    // claim, markPublished, markFailed 각각이 개별 짧은 트랜잭션으로 동작, SQS 호출을 트랜잭션 안에 넣지 않음
-    public int publishPendingOutboxes() {
+    public void publishPendingOutboxes() {
         List<NotificationScheduleOutbox> outboxes = notificationOutboxClaimService.claimPendingOutboxes(
                 notificationProperties.getOutbox().getClaimSize()
         );
         if (outboxes.isEmpty()) {
-            return 0;
-        }
-
-        int publishedCount = 0;
-        int batchSize = Math.min(notificationProperties.getOutbox().getPublishBatchSize(), 10);
-
-        // SQS 특징 상 10개 씩 나눠서 전송
-        for (int start = 0; start < outboxes.size(); start += batchSize) {
-            List<NotificationScheduleOutbox> batch = outboxes.subList(start, Math.min(start + batchSize, outboxes.size()));
-            publishedCount += publishBatch(batch);
-        }
-
-        return publishedCount;
-    }
-
-    private int publishBatch(List<NotificationScheduleOutbox> batch) {
-        try {
-            NotificationSqsBatchResult result = notificationSqsClient.sendBatch(toPayloads(batch));
-            notificationOutboxStatusService.markPublished(result.successIds());
-            handleFailures(batch, result.failedIds());
-            return result.successIds().size();
-        } catch (RuntimeException e) {
-            log.warn("event=notification.sqs_publish_failed outboxCount={}", batch.size(), e);
-            handleFailures(batch, batch.stream().map(NotificationScheduleOutbox::getId).toList());
-            return 0;
-        }
-    }
-
-    // converter
-    private List<NotificationSqsPayload> toPayloads(List<NotificationScheduleOutbox> outboxes) {
-        return outboxes.stream()
-                .map(outbox -> new NotificationSqsPayload(
-                        String.valueOf(outbox.getId()),
-                        outbox.getUser().getFcmToken(),
-                        outbox.getTitle(),
-                        outbox.getBody(),
-                        new NotificationSqsPayload.NotificationData(
-                                String.valueOf(outbox.getTrip().getId()),
-                                outbox.getType().name()
-                        )
-                ))
-                .toList();
-    }
-
-    // 실패한 부분에 대해 재시도/최종 실패 처리
-    private void handleFailures(List<NotificationScheduleOutbox> batch, List<Long> failedIds) {
-        if (failedIds.isEmpty()) {
             return;
         }
 
-        List<Long> retryableIds = new ArrayList<>();
-        List<Long> finalFailedIds = new ArrayList<>();
-
-        for (NotificationScheduleOutbox outbox : batch) {
-            if (!failedIds.contains(outbox.getId())) {
-                continue;
-            }
-
-            int nextRetryCount = outbox.getRetryCount() + 1;
-            if (nextRetryCount > notificationProperties.getOutbox().getMaxRetry()) {
-                finalFailedIds.add(outbox.getId());
-            } else {
-                retryableIds.add(outbox.getId());
-            }
+        NotificationPushClient pushClient = notificationPushClientProvider.getIfAvailable();
+        if (pushClient == null) {
+            log.warn("event=notification.push_client_unavailable outboxCount={}", outboxes.size());
+            return;
         }
 
-        // 재시도 처리
-        notificationOutboxStatusService.markRetryableFailure(retryableIds);
+        for (NotificationScheduleOutbox outbox : outboxes) {
+            sendOne(pushClient, outbox);
+        }
+    }
 
-        // 최종 실패 처리
-        notificationOutboxStatusService.markFailed(finalFailedIds);
+    private void sendOne(NotificationPushClient pushClient, NotificationScheduleOutbox outbox) {
+        try {
+            PushSendResult result = pushClient.send(new PushMessage(
+                    outbox.getUser().getFcmToken(),
+                    outbox.getTitle(),
+                    outbox.getBody(),
+                    Map.of(
+                            "tripId", String.valueOf(outbox.getTrip().getId()),
+                            "type", outbox.getType().name()
+                    )
+            ));
+            if (result.success()) {
+                notificationOutboxStatusService.markSent(outbox.getId());
+                log.info(
+                        "event=notification.sent outboxId={} type={} messageId={}",
+                        outbox.getId(),
+                        outbox.getType(),
+                        result.messageId()
+                );
+            } else {
+                log.warn(
+                        "event=notification.send_failed outboxId={} type={} errorCode={} errorMessage={}",
+                        outbox.getId(),
+                        outbox.getType(),
+                        result.errorCode(),
+                        result.errorMessage()
+                );
+            }
+        } catch (RuntimeException e) {
+            log.warn("event=notification.send_exception outboxId={}", outbox.getId(), e);
+        }
     }
 }

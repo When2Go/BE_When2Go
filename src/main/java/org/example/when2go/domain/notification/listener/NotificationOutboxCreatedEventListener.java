@@ -6,11 +6,12 @@ import org.example.when2go.domain.notification.event.NotificationOutboxesCreated
 import org.example.when2go.domain.notification.service.outbox.NotificationOutboxPublishService;
 import org.example.when2go.global.config.notification.NotificationAsyncConfig;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-// release 단순화로 빈 등록 해제됨. 코드 보존용.
 @Slf4j
+@Component
 @RequiredArgsConstructor
 public class NotificationOutboxCreatedEventListener {
 
@@ -24,7 +25,7 @@ public class NotificationOutboxCreatedEventListener {
         }
 
         try {
-            // SQS로 메시지 발행
+            // PENDING outbox를 FCM으로 발송
             notificationOutboxPublishService.publishPendingOutboxes();
         } catch (RuntimeException e) {
             log.warn("event=notification.outbox_created_listener_failed createdCount={}", event.createdCount(), e);

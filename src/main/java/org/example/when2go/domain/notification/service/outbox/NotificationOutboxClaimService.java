@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.notification.entity.NotificationScheduleOutbox;
 import org.example.when2go.domain.notification.entity.NotificationOutboxStatus;
 import org.example.when2go.domain.notification.repository.NotificationScheduleOutboxRepository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * 즉, "조회 + 소유권 선언"을 하나의 트랜잭션 단위로 묶은 작업이다.
  * */
-// release 단순화로 빈 등록 해제됨. 코드 보존용.
+@Service
 @RequiredArgsConstructor
 public class NotificationOutboxClaimService {
 

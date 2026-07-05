@@ -29,14 +29,14 @@ class NotificationScheduleTest {
     }
 
     @Test
-    void outboxDefaultsToPendingAndCanMoveToPublished() {
+    void outboxDefaultsToPendingAndCanMoveToSent() {
         NotificationSchedule schedule = NotificationSchedule.builder()
                 .trip(trip())
                 .user(user("token"))
                 .type(NotificationType.DEPART_NOW)
                 .scheduledAt(LocalDateTime.of(2026, 5, 7, 9, 0))
                 .build();
-        LocalDateTime publishedAt = LocalDateTime.of(2026, 5, 7, 9, 0);
+        LocalDateTime sentAt = LocalDateTime.of(2026, 5, 7, 9, 0);
 
         NotificationScheduleOutbox outbox = NotificationScheduleOutbox.builder()
                 .schedule(schedule)
@@ -49,11 +49,11 @@ class NotificationScheduleTest {
                 .build();
 
         outbox.startProcessing(LocalDateTime.of(2026, 5, 7, 8, 59));
-        outbox.markPublished(publishedAt);
+        outbox.markSent(sentAt);
 
-        assertThat(outbox.getStatus()).isEqualTo(NotificationOutboxStatus.PUBLISHED);
+        assertThat(outbox.getStatus()).isEqualTo(NotificationOutboxStatus.SENT);
         assertThat(outbox.getProcessingStartedAt()).isNull();
-        assertThat(outbox.getPublishedAt()).isEqualTo(publishedAt);
+        assertThat(outbox.getSentAt()).isEqualTo(sentAt);
     }
 
     private AppUser user(String fcmToken) {
