@@ -110,3 +110,27 @@ Prefer these commands when applicable:
 ```bash
 ./gradlew test
 ./gradlew build
+./gradlew spotlessCheck
+```
+
+## Workflow
+
+This project follows a step-by-step, skill-based workflow.
+
+1. **Spec write** — `superpowers:brainstorming` → `superpowers:writing-plans`
+   - Spec storage: `docs/superpowers/specs/`
+   - Plan storage: `docs/superpowers/plans/`
+2. **Long multi-step tasks** — use `planning-with-files`
+   - Auto-manages `task_plan.md` / `findings.md` / `progress.md` at project root
+   - Prevents session context drift
+3. **Spec review** — run `spec-review` skill in Codex
+4. **Code write** — call `code-with-spring-patterns` skill
+   - Internally orchestrates `jpa-patterns`, `select-spring-design-pattern`, `implement-spring-backend-feature`, `test-patterns`, `review-spring-backend-change`
+5. **Code review** — `code-review` skill + human review
+6. **Runtime verify** — `verify` or `run` skill to boot the actual app
+7. **Commit/push** — `scripts/git-hooks/` runs automatically
+   - First time only: `bash scripts/git-hooks/install.sh`
+   - **pre-commit**: Spotless format, secret scan
+   - **commit-msg**: convention (`type(scope): message`)
+   - **pre-push**: Spotless, tests (ArchUnit included), doc-sync warning
+   - On failure: diagnose with `verify-git-hooks` skill

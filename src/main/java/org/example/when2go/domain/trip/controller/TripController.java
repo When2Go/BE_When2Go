@@ -19,6 +19,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
@@ -35,10 +36,10 @@ public class TripController implements TripControllerApi {
 
     @Override
     @PostMapping(value = "/parse", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<NavigationParseResponse> parse(
+    public DeferredResult<ApiResponse<NavigationParseResponse>> parse(
             @RequestParam("audio") MultipartFile audio
     ) {
-        return ApiResponse.success(navigationParseService.parse(audio));
+        return navigationParseService.parseAsync(audio);
     }
 
     @Override

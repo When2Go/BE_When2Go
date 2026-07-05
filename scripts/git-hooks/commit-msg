@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+exec bash "$HOOK_DIR/lib/commit-msg-check.sh" "$@"

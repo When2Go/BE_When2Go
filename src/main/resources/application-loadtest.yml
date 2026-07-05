@@ -1,0 +1,52 @@
+spring:
+  config:
+    activate:
+      on-profile: loadtest
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL:jdbc:mysql://mysql:3306/when2go?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul}
+    username: ${DB_USERNAME:when2go}
+    password: ${DB_PWD:when2go}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+  data:
+    redis:
+      host: ${REDIS_HOST:when2go-redis}
+      port: 6379
+
+server:
+  tomcat:
+    mbeanregistry:
+      enabled: true
+    threads:
+      max: 20
+    accept-count: 10
+
+gemini:
+  base-url: ${GEMINI_BASE_URL:http://wiremock:8080/v1beta}
+  api-key: test-key
+  model: gemini-2.5-flash
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus,health,metrics
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.95, 0.99
+
+trip:
+  recalc:
+    enabled: false
+
+notification:
+  fcm:
+    enabled: false

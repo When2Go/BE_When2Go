@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+HOOK_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+BLUE=$'\033[0;34m'
+GREEN=$'\033[0;32m'
+RED=$'\033[0;31m'
+NC=$'\033[0m'
+
+cd "$REPO_ROOT"
+
+echo "${BLUE}[pre-push] 1/3 Spotless format check${NC}"
+if ! ./gradlew spotlessCheck --quiet; then
+  echo "${RED}[pre-push] Spotless check failed.${NC}"
+  echo "  run: ./gradlew spotlessApply, then recommit"
+  exit 1
+fi
+
+echo "${BLUE}[pre-push] 2/3 tests (ArchUnit included)${NC}"
+if ! ./gradlew test; then
+  echo "${RED}[pre-push] tests failed. push blocked.${NC}"
+  echo "  run: ./gradlew test --info to find the cause"
+  exit 1
+fi
+
+echo "${BLUE}[pre-push] 3/3 doc-sync check${NC}"
+bash "$HOOK_DIR/lib/doc-sync-check.sh" || true
+
+echo "${GREEN}[pre-push] all checks complete${NC}"
+exit 0
