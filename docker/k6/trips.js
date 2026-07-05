@@ -10,7 +10,7 @@ export const options = {
   }},
 };
 export default function () {
-  const r = http.get(`${BASE}/api/trips?status=UPCOMING&date=2026-12-31`, {
+  const r = http.get(`${BASE}/api/trips?status=SCHEDULED&date=2026-12-31`, {
     headers: { 'X-Device-Id': DEV },
   });
   check(r, { 'status 200': (x) => x.status === 200 });
