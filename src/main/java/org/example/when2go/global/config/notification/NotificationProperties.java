@@ -18,6 +18,16 @@ public class NotificationProperties {
     private Schedule schedule = new Schedule();
     private Outbox outbox = new Outbox();
     private Fcm fcm = new Fcm();
+    private Sqs sqs = new Sqs();
+
+    @Getter
+    @Setter
+    public static class Sqs {
+
+        private boolean enabled = false;
+        private String region = "ap-northeast-2";
+        private String queueUrl;
+    }
 
     @Getter
     @Setter

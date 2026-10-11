@@ -36,7 +36,8 @@ class NotificationOutboxPublishServiceTest {
             claimService,
             statusService,
             pushClientProvider,
-            properties
+            properties,
+            mock(ObjectProvider.class)
     );
 
     @Test

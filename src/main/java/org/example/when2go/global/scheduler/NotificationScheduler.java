@@ -4,12 +4,14 @@ import lombok.RequiredArgsConstructor;
 import org.example.when2go.domain.notification.event.NotificationScheduleScanRequestedEvent;
 import org.example.when2go.domain.notification.service.outbox.NotificationOutboxRecoveryService;
 import org.example.when2go.global.config.notification.NotificationProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "notification.scheduler", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class NotificationScheduler {
 
     private final ApplicationEventPublisher eventPublisher;
