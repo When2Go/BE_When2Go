@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.3'
+    implementation 'com.amazonaws:aws-lambda-java-events:3.14.0'
+    // 메시징만 쓰므로 Firestore / Storage(gRPC 포함)는 빼서 zip 크기를 줄임 (직접 업로드 한도 50MB)
+    implementation('com.google.firebase:firebase-admin:9.9.0') {
+        exclude group: 'com.google.cloud', module: 'google-cloud-firestore'
+        exclude group: 'com.google.cloud', module: 'google-cloud-storage'
+    }
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
+
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.assertj:assertj-core:3.26.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+// Lambda 배포용 zip: 클래스는 루트, 의존성 jar는 lib/
+tasks.register('buildZip', Zip) {
+    archiveFileName = 'notification-lambda.zip'
+    destinationDirectory = layout.buildDirectory.dir('distributions')
+    from compileJava
+    from processResources
+    into('lib') {
+        from configurations.runtimeClasspath
+    }
+}
+
+tasks.named('build') {
+    dependsOn 'buildZip'
+}
