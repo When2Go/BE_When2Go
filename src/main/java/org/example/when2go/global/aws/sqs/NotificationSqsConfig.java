@@ -1,7 +1,6 @@
 package org.example.when2go.global.aws.sqs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.when2go.domain.notification.client.NotificationPushClient;
 import org.example.when2go.domain.notification.client.NotificationQueueClient;
 import org.example.when2go.global.config.notification.NotificationProperties;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -26,14 +25,5 @@ public class NotificationSqsConfig {
     @Bean
     NotificationQueueClient notificationQueueClient(SqsClient sqsClient, NotificationProperties properties) {
         return new NotificationSqsSender(sqsClient, properties.getSqs().getQueueUrl(), objectMapper);
-    }
-
-    @Bean
-    NotificationSqsPoller notificationSqsPoller(
-            SqsClient sqsClient,
-            NotificationProperties properties,
-            NotificationPushClient pushClient
-    ) {
-        return new NotificationSqsPoller(sqsClient, properties.getSqs().getQueueUrl(), pushClient, objectMapper);
     }
 }

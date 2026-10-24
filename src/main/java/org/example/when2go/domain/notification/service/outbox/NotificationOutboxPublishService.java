@@ -32,7 +32,7 @@ public class NotificationOutboxPublishService {
             return;
         }
 
-        // SQS가 켜져 있으면 큐에 넣는 것까지만 하고, FCM 발송은 큐 폴러가 담당
+        // SQS가 켜져 있으면 큐에 넣는 것까지만 하고, FCM 발송은 lambda가 담당
         NotificationQueueClient queueClient = notificationQueueClientProvider.getIfAvailable();
         if (queueClient != null) {
             for (NotificationScheduleOutbox outbox : outboxes) {

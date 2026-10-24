@@ -8,7 +8,7 @@ import org.example.when2go.domain.notification.dto.PushMessage;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
-// outbox 한 건을 SQS 메인 큐에 넣는다. 실제 FCM 발송은 NotificationSqsPoller가 담당.
+// outbox 한 건을 SQS 메인 큐에 넣는다. 실제 FCM 발송은 notification-lambda가 담당.
 public class NotificationSqsSender implements NotificationQueueClient {
 
     private final SqsClient sqsClient;
