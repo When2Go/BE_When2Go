@@ -1,11 +1,14 @@
 package org.example.when2go.lambda.notification;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.ErrorCode;
+import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.MessagingErrorCode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,6 +89,15 @@ class NotificationSqsHandlerTest {
     void readsJsonOrBase64Credentials() {
         assertThat(new String(NotificationSqsHandler.readCredentials("{\"a\":1}", null))).isEqualTo("{\"a\":1}");
         assertThat(new String(NotificationSqsHandler.readCredentials("", "eyJhIjoxfQ=="))).isEqualTo("{\"a\":1}");
+    }
+
+    @Test
+    void firebaseOptionsBuildWithPackagedDependencies() {
+        // 의존성을 빼다가 Firebase 초기화에 필요한 클래스가 빠지면 여기서 NoClassDefFoundError
+        assertThatCode(() -> FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.create(null))
+                .build())
+                .doesNotThrowAnyException();
     }
 
     private SQSBatchResponse handle(SQSMessage... messages) {

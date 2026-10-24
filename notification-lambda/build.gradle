@@ -20,6 +20,8 @@ dependencies {
         exclude group: 'com.google.cloud', module: 'google-cloud-firestore'
         exclude group: 'com.google.cloud', module: 'google-cloud-storage'
     }
+    // FirebaseOptions가 쓰는 JacksonFactory. 원래 Firestore를 통해 딸려오던 것이라 직접 추가
+    implementation 'com.google.http-client:google-http-client-jackson2:2.1.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.2'
 
     testImplementation platform('org.junit:junit-bom:5.11.4')
