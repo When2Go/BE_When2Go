@@ -14,6 +14,7 @@ on:
 
 env:
   IMAGE_TAG: latest
+  NOTIFICATION_LAMBDA_NAME: when2go-notification-sender
 
 jobs:
   build-and-deploy:
@@ -50,6 +51,42 @@ jobs:
 
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
           docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$SHA_TAG"
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build notification Lambda
+        run: ./gradlew :notification-lambda:buildZip --no-daemon
+
+      - name: Deploy notification Lambda
+        env:
+          FCM_CREDENTIALS_JSON: ${{ secrets.FCM_CREDENTIALS_JSON }}
+          FCM_CREDENTIALS_BASE64: ${{ secrets.FCM_CREDENTIALS_BASE64 }}
+        run: |
+          set -e
+
+          if [ -z "$FCM_CREDENTIALS_JSON" ] && [ -z "$FCM_CREDENTIALS_BASE64" ]; then
+            echo "FCM_CREDENTIALS_JSON or FCM_CREDENTIALS_BASE64 secret is required for notification Lambda"
+            exit 1
+          fi
+
+          aws lambda update-function-code \
+            --function-name "$NOTIFICATION_LAMBDA_NAME" \
+            --zip-file fileb://notification-lambda/build/distributions/notification-lambda.zip \
+            > /dev/null
+          aws lambda wait function-updated --function-name "$NOTIFICATION_LAMBDA_NAME"
+
+          jq -n --arg json "$FCM_CREDENTIALS_JSON" --arg b64 "$FCM_CREDENTIALS_BASE64" \
+            '{Variables: {FCM_CREDENTIALS_JSON: $json, FCM_CREDENTIALS_BASE64: $b64}}' > lambda-env.json
+          aws lambda update-function-configuration \
+            --function-name "$NOTIFICATION_LAMBDA_NAME" \
+            --environment file://lambda-env.json \
+            > /dev/null
+          rm -f lambda-env.json
+          aws lambda wait function-updated --function-name "$NOTIFICATION_LAMBDA_NAME"
 
       - name: Copy docker-compose.yml to API EC2
         uses: appleboy/scp-action@v0.1.7
@@ -122,11 +159,6 @@ jobs:
 
             cd /home/${{ secrets.EC2_SCHEDULER_USER }}/when2go
 
-            if [ '${{ secrets.FCM_CREDENTIALS_JSON != '' }}' != 'true' ] && [ '${{ secrets.FCM_CREDENTIALS_BASE64 != '' }}' != 'true' ]; then
-              echo "FCM_CREDENTIALS_JSON or FCM_CREDENTIALS_BASE64 secret is required for demo notification deploy"
-              exit 1
-            fi
-
             cat > .env <<'EOF'
             APP_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
             DB_URL=${{ secrets.DB_URL }}
@@ -140,25 +172,11 @@ jobs:
             NOTIFICATION_SCHEDULER_ENABLED=true
             NOTIFICATION_SQS_ENABLED=true
             NOTIFICATION_SQS_QUEUE_URL=${{ secrets.NOTIFICATION_SQS_QUEUE_URL }}
-            NOTIFICATION_FCM_ENABLED=true
+            NOTIFICATION_FCM_ENABLED=false
             EOF
 
-            if [ '${{ secrets.FCM_CREDENTIALS_JSON != '' }}' = 'true' ]; then
-              mkdir -p .secrets
-              cat > .secrets/when2go-firebase-adminsdk.json <<'EOF_FIREBASE'
-            ${{ secrets.FCM_CREDENTIALS_JSON }}
-            EOF_FIREBASE
-              chmod 600 .secrets/when2go-firebase-adminsdk.json
-              {
-                echo "FCM_CREDENTIALS_PATH=.secrets/when2go-firebase-adminsdk.json"
-                echo "FCM_CREDENTIALS_BASE64="
-              } >> .env
-            else
-              {
-                echo "FCM_CREDENTIALS_PATH="
-                printf 'FCM_CREDENTIALS_BASE64=%s\n' '${{ secrets.FCM_CREDENTIALS_BASE64 }}'
-              } >> .env
-            fi
+            # FCM 발송은 Lambda로 옮겨서 스케줄러에는 FCM 키가 필요 없음
+            rm -rf .secrets
 
             chmod 600 .env
 
