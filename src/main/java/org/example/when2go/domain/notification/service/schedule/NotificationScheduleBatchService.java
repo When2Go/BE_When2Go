@@ -1,5 +1,7 @@
 package org.example.when2go.domain.notification.service.schedule;
 
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -30,12 +32,13 @@ public class NotificationScheduleBatchService {
     private final NotificationScheduleRepository notificationScheduleRepository;
     private final NotificationScheduleOutboxRepository notificationScheduleOutboxRepository;
     private final ApplicationEventPublisher eventPublisher;
+    private final Clock clock;
 
     // FOR UPDATE SKIP LOCKED로 한 batch를 잠그고, outbox 생성과 DONE 전이까지 한 트랜잭션으로 처리
     // 실패 시 batch 전체가 rollback되어 schedule은 PENDING으로 복구
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public int processDueScheduleBatch(int limit) {
-        List<Long> claimedIds = notificationScheduleRepository.claimDueScheduleIds(limit);
+        List<Long> claimedIds = notificationScheduleRepository.claimDueScheduleIds(LocalDateTime.now(clock), limit);
         if (claimedIds.isEmpty()) {
             return 0;
         }

@@ -20,14 +20,14 @@ public class TripRecalcClaimService {
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
     public List<Long> claim(int limit) {
-        List<Long> tripIds = tripRepository.claimDueRecalcTripIds(limit);
+        LocalDateTime now = LocalDateTime.now(clock);
+        List<Long> tripIds = tripRepository.claimDueRecalcTripIds(now, limit);
         if (tripIds.isEmpty()) {
             return List.of();
         }
 
         // FOR UPDATE 락은 트랜잭션 종료 시 풀리므로, next_recalc_at을 미래로 밀어 soft lock 유지
-        LocalDateTime holdUntil = LocalDateTime.now(clock)
-                .plus(tripRecalcProperties.getClaimHoldDuration());
+        LocalDateTime holdUntil = now.plus(tripRecalcProperties.getClaimHoldDuration());
         tripRepository.updateNextRecalcAt(tripIds, holdUntil);
         return tripIds;
     }

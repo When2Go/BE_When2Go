@@ -29,14 +29,15 @@ public interface NotificationScheduleRepository extends JpaRepository<Notificati
                     SELECT id
                     FROM notification_schedules
                     WHERE status = 'PENDING'
-                      AND scheduled_at <= NOW()
+                      AND scheduled_at <= :now
                     ORDER BY scheduled_at ASC, id ASC
                     LIMIT :limit
                     FOR UPDATE SKIP LOCKED
                     """,
             nativeQuery = true
     )
-    List<Long> claimDueScheduleIds(@Param("limit") int limit);
+    // NOW()는 DB 시간대(RDS 기본 UTC)를 따르므로, 저장할 때와 같은 앱 시계 기준 시각을 넘겨받는다.
+    List<Long> claimDueScheduleIds(@Param("now") LocalDateTime now, @Param("limit") int limit);
 
     @Query("""
             SELECT s

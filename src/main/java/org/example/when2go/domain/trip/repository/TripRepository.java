@@ -19,14 +19,15 @@ public interface TripRepository extends JpaRepository<Trip, Long> {
                     FROM trips
                     WHERE recalc_phase <> 'DONE'
                       AND next_recalc_at IS NOT NULL
-                      AND next_recalc_at <= NOW()
+                      AND next_recalc_at <= :now
                     ORDER BY next_recalc_at ASC, id ASC
                     LIMIT :limit
                     FOR UPDATE SKIP LOCKED
                     """,
             nativeQuery = true
     )
-    List<Long> claimDueRecalcTripIds(@Param("limit") int limit);
+    // NOW()는 DB 시간대(RDS 기본 UTC)를 따르므로, 저장할 때와 같은 앱 시계 기준 시각을 넘겨받는다.
+    List<Long> claimDueRecalcTripIds(@Param("now") LocalDateTime now, @Param("limit") int limit);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Trip t set t.nextRecalcAt = :nextRecalcAt where t.id in :ids")

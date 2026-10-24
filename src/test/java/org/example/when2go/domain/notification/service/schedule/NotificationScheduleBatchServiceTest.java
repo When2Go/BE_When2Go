@@ -8,7 +8,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import org.example.when2go.domain.notification.entity.NotificationSchedule;
 import org.example.when2go.domain.notification.entity.NotificationScheduleOutbox;
@@ -34,17 +36,31 @@ class NotificationScheduleBatchServiceTest {
             org.mockito.Mockito.mock(NotificationScheduleOutboxRepository.class);
     private final ApplicationEventPublisher eventPublisher =
             org.mockito.Mockito.mock(ApplicationEventPublisher.class);
+    private static final LocalDateTime NOW = LocalDateTime.of(2026, 10, 24, 21, 7);
+    private final Clock clock = Clock.fixed(
+            NOW.atZone(ZoneId.of("Asia/Seoul")).toInstant(), ZoneId.of("Asia/Seoul"));
     private final NotificationScheduleBatchService service =
             new NotificationScheduleBatchService(
                     notificationScheduleRepository,
                     notificationScheduleOutboxRepository,
-                    eventPublisher
+                    eventPublisher,
+                    clock
             );
+
+    // DB NOW()(RDS 기본 UTC)가 아니라 앱 시계 기준 시각으로 due schedule을 조회한다.
+    @Test
+    void claimUsesApplicationClockInsteadOfDatabaseNow() {
+        when(notificationScheduleRepository.claimDueScheduleIds(any(), eq(10))).thenReturn(List.of());
+
+        service.processDueScheduleBatch(10);
+
+        verify(notificationScheduleRepository).claimDueScheduleIds(NOW, 10);
+    }
 
     // claim 결과가 비면 outbox/DONE 처리 없이 0건으로 종료한다.
     @Test
     void processReturnsZeroWhenNothingClaimed() {
-        when(notificationScheduleRepository.claimDueScheduleIds(10)).thenReturn(List.of());
+        when(notificationScheduleRepository.claimDueScheduleIds(NOW, 10)).thenReturn(List.of());
 
         int processedCount = service.processDueScheduleBatch(10);
 
@@ -58,7 +74,7 @@ class NotificationScheduleBatchServiceTest {
     @Test
     void processCreatesOutboxAndMarksScheduleDoneInSingleBulkUpdate() {
         NotificationSchedule schedule = schedule(1L, "token");
-        when(notificationScheduleRepository.claimDueScheduleIds(10)).thenReturn(List.of(1L));
+        when(notificationScheduleRepository.claimDueScheduleIds(NOW, 10)).thenReturn(List.of(1L));
         when(notificationScheduleRepository.findAllByIdInWithUserAndTrip(List.of(1L)))
                 .thenReturn(List.of(schedule));
         when(notificationScheduleOutboxRepository.findDedupKeysIn(List.of("notification:1")))
@@ -85,7 +101,7 @@ class NotificationScheduleBatchServiceTest {
     @Test
     void processSkipsOutboxAndStillMarksDoneWhenTokenMissing() {
         NotificationSchedule schedule = schedule(1L, null);
-        when(notificationScheduleRepository.claimDueScheduleIds(10)).thenReturn(List.of(1L));
+        when(notificationScheduleRepository.claimDueScheduleIds(NOW, 10)).thenReturn(List.of(1L));
         when(notificationScheduleRepository.findAllByIdInWithUserAndTrip(List.of(1L)))
                 .thenReturn(List.of(schedule));
         when(notificationScheduleOutboxRepository.findDedupKeysIn(List.of("notification:1")))
@@ -107,7 +123,7 @@ class NotificationScheduleBatchServiceTest {
     @Test
     void processSkipsOutboxAndStillMarksDoneWhenDedupExists() {
         NotificationSchedule schedule = schedule(1L, "token");
-        when(notificationScheduleRepository.claimDueScheduleIds(10)).thenReturn(List.of(1L));
+        when(notificationScheduleRepository.claimDueScheduleIds(NOW, 10)).thenReturn(List.of(1L));
         when(notificationScheduleRepository.findAllByIdInWithUserAndTrip(List.of(1L)))
                 .thenReturn(List.of(schedule));
         when(notificationScheduleOutboxRepository.findDedupKeysIn(List.of("notification:1")))
@@ -130,7 +146,7 @@ class NotificationScheduleBatchServiceTest {
     void processMarksAllSchedulesDoneInSingleBulkUpdate() {
         NotificationSchedule scheduleWithToken = schedule(1L, "token");
         NotificationSchedule scheduleWithoutToken = schedule(2L, null);
-        when(notificationScheduleRepository.claimDueScheduleIds(10)).thenReturn(List.of(1L, 2L));
+        when(notificationScheduleRepository.claimDueScheduleIds(NOW, 10)).thenReturn(List.of(1L, 2L));
         when(notificationScheduleRepository.findAllByIdInWithUserAndTrip(List.of(1L, 2L)))
                 .thenReturn(List.of(scheduleWithToken, scheduleWithoutToken));
         when(notificationScheduleOutboxRepository.findDedupKeysIn(List.of("notification:1", "notification:2")))
@@ -152,7 +168,7 @@ class NotificationScheduleBatchServiceTest {
     @Test
     void processPropagatesOutboxSaveFailure() {
         NotificationSchedule schedule = schedule(1L, "token");
-        when(notificationScheduleRepository.claimDueScheduleIds(10)).thenReturn(List.of(1L));
+        when(notificationScheduleRepository.claimDueScheduleIds(NOW, 10)).thenReturn(List.of(1L));
         when(notificationScheduleRepository.findAllByIdInWithUserAndTrip(List.of(1L)))
                 .thenReturn(List.of(schedule));
         when(notificationScheduleOutboxRepository.findDedupKeysIn(List.of("notification:1")))
