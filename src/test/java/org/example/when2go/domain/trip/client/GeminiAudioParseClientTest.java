@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -19,7 +20,8 @@ class GeminiAudioParseClientTest {
     private final GeminiAudioParseClient client = new GeminiAudioParseClient(
             null,
             Clock.fixed(Instant.parse("2026-06-19T01:00:00Z"), ZoneOffset.UTC),
-            "test-model"
+            "test-model",
+            Duration.ofSeconds(25)
     );
 
     private final List<AudioParseRequest> threeRequests = List.of(
