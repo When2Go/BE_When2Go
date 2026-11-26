@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeoutException;
 import org.example.when2go.domain.trip.dto.AudioParseRequest;
 import org.example.when2go.domain.trip.dto.NavigationParseResponse;
 import org.example.when2go.domain.trip.error.NavigationParseErrorCode;
@@ -109,6 +110,21 @@ class NavigationParseServiceTest {
         assertThat(result).isInstanceOf(DomainException.class);
         assertThat(((DomainException) result).getErrorCode())
                 .isEqualTo(NavigationParseErrorCode.PARSE_QUEUE_FULL);
+    }
+
+    @Test
+    void HTTP_Timeout은_PARSE_TIMEOUT_DomainException으로_변환된다() {
+        MockMultipartFile mp3 = new MockMultipartFile("audio", "voice.mp3", "audio/mp3", new byte[]{1, 2, 3});
+        CompletableFuture<NavigationParseResponse> failed = new CompletableFuture<>();
+        failed.completeExceptionally(new TimeoutException("Did not observe any item within 25s"));
+        when(processor.submit(any())).thenReturn(failed);
+
+        DeferredResult<ApiResponse<NavigationParseResponse>> dr =
+                navigationParseService.parseAsync(mp3);
+
+        assertThat(dr.hasResult()).isTrue();
+        assertThat(((DomainException) dr.getResult()).getErrorCode())
+                .isEqualTo(NavigationParseErrorCode.PARSE_TIMEOUT);
     }
 
     @Test
