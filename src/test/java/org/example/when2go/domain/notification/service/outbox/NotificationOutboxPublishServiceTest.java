@@ -8,6 +8,10 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import org.example.when2go.domain.notification.client.NotificationPushClient;
 import org.example.when2go.domain.notification.dto.PushMessage;
 import org.example.when2go.domain.notification.dto.PushSendResult;
@@ -36,7 +40,8 @@ class NotificationOutboxPublishServiceTest {
             claimService,
             statusService,
             pushClientProvider,
-            properties
+            properties,
+            Runnable::run
     );
 
     @Test
@@ -91,6 +96,40 @@ class NotificationOutboxPublishServiceTest {
 
         verify(pushClient, never()).send(any());
         verify(statusService, never()).markSent(any());
+    }
+
+    @Test
+    void publishPendingOutboxesSendsConcurrentlyAndIsolatesFailure() throws Exception {
+        List<NotificationScheduleOutbox> outboxes = List.of(outbox(5L, 0), outbox(6L, 0), outbox(7L, 0));
+        when(claimService.claimPendingOutboxes(500)).thenReturn(outboxes);
+        when(pushClientProvider.getIfAvailable()).thenReturn(pushClient);
+        // 세 발송이 동시에 진행 중이어야만 latch가 풀린다. 순차 실행이면 타임아웃으로 실패한다.
+        CountDownLatch allInFlight = new CountDownLatch(3);
+        when(pushClient.send(any(PushMessage.class))).thenAnswer(invocation -> {
+            allInFlight.countDown();
+            if (!allInFlight.await(2, TimeUnit.SECONDS)) {
+                return PushSendResult.failure(PushSendResultType.TRANSIENT_FAILURE, "TIMEOUT", "not concurrent");
+            }
+            if (invocation.<PushMessage>getArgument(0).title().equals("boom")) {
+                throw new RuntimeException("boom");
+            }
+            return PushSendResult.success("msg");
+        });
+        ReflectionTestUtils.setField(outboxes.get(1), "title", "boom");
+
+        try (ExecutorService virtualExecutor = Executors.newVirtualThreadPerTaskExecutor()) {
+            new NotificationOutboxPublishService(
+                    claimService,
+                    statusService,
+                    pushClientProvider,
+                    properties,
+                    virtualExecutor
+            ).publishPendingOutboxes();
+        }
+
+        verify(statusService).markSent(5L);
+        verify(statusService, never()).markSent(6L);
+        verify(statusService).markSent(7L);
     }
 
     private NotificationScheduleOutbox outbox(Long id, int retryCount) {

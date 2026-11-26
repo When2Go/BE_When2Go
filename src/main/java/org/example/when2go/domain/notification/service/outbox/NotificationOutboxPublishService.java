@@ -2,6 +2,8 @@ package org.example.when2go.domain.notification.service.outbox;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.notification.client.NotificationPushClient;
@@ -21,6 +23,7 @@ public class NotificationOutboxPublishService {
     private final NotificationOutboxStatusService notificationOutboxStatusService;
     private final ObjectProvider<NotificationPushClient> notificationPushClientProvider;
     private final NotificationProperties notificationProperties;
+    private final Executor notificationPushExecutor;
 
     public void publishPendingOutboxes() {
         List<NotificationScheduleOutbox> outboxes = notificationOutboxClaimService.claimPendingOutboxes(
@@ -36,9 +39,11 @@ public class NotificationOutboxPublishService {
             return;
         }
 
-        for (NotificationScheduleOutbox outbox : outboxes) {
-            sendOne(pushClient, outbox);
-        }
+        // 발송 코드는 블로킹 그대로 두고, outbox마다 가상 스레드에서 동시에 보낸 뒤 전부 끝날 때까지 기다린다.
+        CompletableFuture<?>[] sends = outboxes.stream()
+                .map(outbox -> CompletableFuture.runAsync(() -> sendOne(pushClient, outbox), notificationPushExecutor))
+                .toArray(CompletableFuture[]::new);
+        CompletableFuture.allOf(sends).join();
     }
 
     private void sendOne(NotificationPushClient pushClient, NotificationScheduleOutbox outbox) {
