@@ -1,9 +1,11 @@
 package org.example.when2go.global.config.notification;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
@@ -14,6 +16,7 @@ public class NotificationAsyncConfig {
 
     public static final String SCHEDULE_PROCESSOR_EXECUTOR = "notificationScheduleProcessorExecutor";
     public static final String OUTBOX_PUBLISHER_EXECUTOR = "notificationOutboxPublisherExecutor";
+    public static final String PUSH_EXECUTOR = "notificationPushExecutor";
 
     @Bean(name = SCHEDULE_PROCESSOR_EXECUTOR)
     ThreadPoolTaskExecutor notificationScheduleProcessorExecutor() {
@@ -23,6 +26,14 @@ public class NotificationAsyncConfig {
     @Bean(name = OUTBOX_PUBLISHER_EXECUTOR)
     ThreadPoolTaskExecutor notificationOutboxPublisherExecutor() {
         return executor(OUTBOX_PUBLISHER_EXECUTOR, 1, 1, 100);
+    }
+
+    // FCM 발송은 대부분 블로킹 I/O 대기이므로 작업마다 가상 스레드를 생성한다.
+    @Bean(name = PUSH_EXECUTOR)
+    Executor notificationPushExecutor() {
+        SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor(PUSH_EXECUTOR + "-");
+        executor.setVirtualThreads(true);
+        return executor;
     }
 
     private ThreadPoolTaskExecutor executor(String name, int corePoolSize, int maxPoolSize, int queueCapacity) {
