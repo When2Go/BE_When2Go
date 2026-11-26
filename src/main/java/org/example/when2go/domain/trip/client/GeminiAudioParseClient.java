@@ -2,6 +2,7 @@ package org.example.when2go.domain.trip.client;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -11,14 +12,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.example.when2go.domain.trip.dto.AudioParseRequest;
 import org.example.when2go.domain.trip.dto.NavigationParseResponse;
 import org.example.when2go.domain.trip.error.NavigationParseErrorCode;
 import org.example.when2go.global.error.DomainException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
@@ -30,6 +34,7 @@ public class GeminiAudioParseClient {
     private final WebClient webClient;
     private final Clock clock;
     private final String model;
+    private final Duration httpTimeout;
 
     // Gemini 응답에 modelVersion/usageMetadata 등 우리가 안 쓰는 필드가 많아서 모르는 필드는 무시.
     private final ObjectMapper objectMapper = JsonMapper.builder()
@@ -39,11 +44,13 @@ public class GeminiAudioParseClient {
     public GeminiAudioParseClient(
             WebClient geminiWebClient,
             Clock clock,
-            @Value("${gemini.model}") String model
+            @Value("${gemini.model}") String model,
+            @Value("${gemini.audio-parse.http-timeout}") Duration httpTimeout
     ) {
         this.webClient = geminiWebClient;
         this.clock = clock;
         this.model = model;
+        this.httpTimeout = httpTimeout;
     }
 
     // 프롬프트에 현재 시각을 주입할 때 쓰는 형식. 예: 2026-06-19 14:00 (금)
@@ -97,27 +104,32 @@ public class GeminiAudioParseClient {
                - 반드시 입력 순서대로 id 0,1,2,... 를 매기고 입력 개수와 동일한 개수의 객체를 반환
                - null 은 JSON null 로 출력. 문자열 "null" 로 쓰지 말 것""";
 
-    public Map<Long, NavigationParseResponse> parseBatch(List<AudioParseRequest> requests) {
+    // 블로킹 없이 Mono를 반환한다. 호출자는 subscribe 직후 반환되고, 결과는 응답 도착 시 Event Loop에서 전달된다.
+    // 실패 시그널: TimeoutException(HTTP Timeout) 또는 DomainException(PARSE_FAILED).
+    public Mono<Map<Long, NavigationParseResponse>> parseBatch(List<AudioParseRequest> requests) {
         if (requests == null || requests.isEmpty()) {
-            return Map.of();
+            return Mono.just(Map.of());
         }
 
-        Map<String, Object> requestBody = buildRequestBody(requests);
-
-        String body;
-        try {
-            body = webClient.post()
-                    .uri("/models/{model}:generateContent", model)
-                    .bodyValue(requestBody)
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block();
-        } catch (RuntimeException e) {
-            log.error("[Gemini] 배치 호출 실패. size={}", requests.size(), e);
-            throw new DomainException(NavigationParseErrorCode.PARSE_FAILED, e);
-        }
-
-        return toResponseMap(body, requests);
+        // Base64 인코딩 + JSON 직렬화(수 MB)는 구독한 스레드(스케줄러)에서 끝내고, Event Loop에는 완성된 바이트만 넘긴다.
+        return Mono.fromCallable(() -> objectMapper.writeValueAsBytes(buildRequestBody(requests)))
+                .flatMap(requestBody -> webClient.post()
+                        .uri("/models/{model}:generateContent", model)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(requestBody)
+                        .retrieve()
+                        .bodyToMono(String.class)
+                        // 연결~응답 본문 수신까지 호출 전체 제한. 초과 시 구독이 취소되어 진행 중인 HTTP 연결도 끊긴다.
+                        .timeout(httpTimeout))
+                // 빈 본문이면 Mono가 값 없이 끝나 호출자가 Timeout까지 기다리게 되므로, 파싱 실패로 이어지게 한다.
+                .defaultIfEmpty("")
+                .map(body -> toResponseMap(body, requests))
+                .onErrorMap(
+                        e -> !(e instanceof DomainException) && !(e instanceof TimeoutException),
+                        e -> {
+                            log.error("[Gemini] 배치 호출 실패. size={}", requests.size(), e);
+                            return new DomainException(NavigationParseErrorCode.PARSE_FAILED, e);
+                        });
     }
 
     private Map<String, Object> buildRequestBody(List<AudioParseRequest> requests) {

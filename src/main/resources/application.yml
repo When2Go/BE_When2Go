@@ -15,3 +15,12 @@ gemini:
   api-key: ${GEMINI_API_KEY:}
   base-url: ${GEMINI_BASE_URL:https://generativelanguage.googleapis.com/v1beta}
   model: ${GEMINI_MODEL:gemini-2.5-flash}
+  audio-parse:
+    # Gemini HTTP 호출 전체(연결~응답 본문 수신) 제한. Future Timeout(30s) - 최대 큐 대기(허가 주기 4s + tick 1s).
+    http-timeout: ${GEMINI_AUDIO_PARSE_HTTP_TIMEOUT:25s}
+    rate-limiter:
+      # 4초 주기마다 1회 호출 허가. 고정 주기 방식이라 경계에서 두 호출이 붙을 수 있다(슬라이딩 1분 최악 16회).
+      limit-for-period: ${GEMINI_AUDIO_PARSE_LIMIT_FOR_PERIOD:1}
+      limit-refresh-period: ${GEMINI_AUDIO_PARSE_LIMIT_REFRESH_PERIOD:4s}
+      # 허가가 없으면 기다리지 않고 즉시 실패 → 스케줄러 스레드를 붙잡지 않는다.
+      timeout-duration: 0s

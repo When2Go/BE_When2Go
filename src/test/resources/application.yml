@@ -7,3 +7,9 @@ gemini:
   api-key: test-key
   base-url: https://generativelanguage.googleapis.com/v1beta
   model: test-model
+  audio-parse:
+    http-timeout: 25s
+    rate-limiter:
+      limit-for-period: 1
+      limit-refresh-period: 4s
+      timeout-duration: 0s
